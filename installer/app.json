@@ -43,6 +43,10 @@
       "Open the panel: Window > Extensions > Cueline.",
       "The first time, it downloads a speech model (about 1.6 GB)."
     ],
-    "help": "github.com/ConformLabs/cueline"
+    "help": "github.com/ConformLabs/cueline",
+    "keep": "Next, Cueline is updated. Your speech models, settings and history are kept.",
+    "removes": "Removes the Adobe® Premiere Pro® panel and its engine.",
+    "removeAll": "Also remove the speech models, settings and history",
+    "unconfirm": "Cueline will be removed from Premiere Pro. Your speech models, settings and history (in %APPDATA%\\Cueline) are kept, unless you chose to remove them too."
   }
 }

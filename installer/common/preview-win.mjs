@@ -71,6 +71,10 @@ img.p{position:absolute;image-rendering:pixelated}`;
       ["failed", "cloudflared not downloaded: no internet. Panel › Menu › ChatGPT on the web installs it later."]],
     next: ["Restart After Effects (it is open).", "Restart Claude Desktop, Claude Code and Cursor.", "Ask one of them “What's in my project?” The Surehand panel (Window › Extensions › Surehand MCP) shows when it's connected."],
     help: "github.com/ConformLabs/surehand-mcp",
+    keep: "Next, you can change which AI apps are connected. Your settings and checkpoints are kept.",
+    removes: "Removes the server, the Adobe® After Effects® extension and the AI app connections.",
+    removeAll: "Also remove my settings and checkpoints",
+    unconfirm: "Surehand MCP will be removed: the server, the After Effects extension, its AI app connections and its private Node.js. Your settings (.surehand\\ae\\config.json), project checkpoints (.surehand\\ae\\checkpoints) and your other files there are kept.",
     ...(app.preview || {}),
   };
   const pages = {};
@@ -148,19 +152,19 @@ img.p{position:absolute;image-rendering:pixelated}`;
     inner(13, y + 5, 280, 10, esc(title), "strong") + inner(13, y + 16, 280, noteH, esc(note), "muted");
   const maint = (uninstall) =>
     page(
-      header("Update or uninstall Surehand MCP", "Version 1.4.0-beta.1 is installed for your Windows account.") +
-        option(4, !uninstall, `Update to ${version}`, "Replaces 1.4.0-beta.1. Next, you can change which AI apps are connected. Your settings and checkpoints are kept.") +
-        option(44, uninstall, "Uninstall", "Removes the server, the Adobe® After Effects® extension and the AI app connections.") +
+      header(`Update or uninstall ${app.name}`, "Version 1.4.0-beta.1 is installed for your Windows account.") +
+        option(4, !uninstall, `Update to ${version}`, `Replaces 1.4.0-beta.1. ${P.keep}`) +
+        option(44, uninstall, "Uninstall", P.removes) +
         `<div class="box ${uninstall ? "" : "off"}" style="left:${Math.round(28 * UX)}px;top:${Math.round((44 + 81) * UY) + 3}px"></div>` +
-        inner(25, 81, 268, 10, "Also remove my settings and checkpoints", uninstall ? "" : "muted") + rule(96),
+        inner(25, 81, 268, 10, esc(P.removeAll), uninstall ? "" : "muted") + rule(96),
       [[uninstall ? "Uninstall" : "Next", 214, "main"], ["Cancel", 273]],
     );
   pages.maintenance = maint(false);
   pages["maintenance-uninstall"] = maint(true);
   pages["uninstall-confirm"] = page(
-    header("Uninstall Surehand MCP", "Remove Surehand MCP from your computer.") +
-      inner(0, 0, 300, 30, "Surehand MCP will be removed: the server, the After Effects extension, its AI app connections and its private Node.js. Your settings (.surehand\\ae\\config.json), project checkpoints (.surehand\\ae\\checkpoints) and your other files there are kept.") +
-      inner(0, 40, 60, 10, "Uninstalling from:", "muted") + inner(62, 38, 238, 13, `<div style="border:1px solid #444;padding:1px 4px;height:100%">C:\\Users\\you\\AppData\\Local\\Programs\\Surehand MCP\\</div>`),
+    header(`Uninstall ${app.name}`, `Remove ${app.name} from your computer.`) +
+      inner(0, 0, 300, 30, esc(P.unconfirm)) +
+      inner(0, 40, 60, 10, "Uninstalling from:", "muted") + inner(62, 38, 238, 13, `<div style="border:1px solid #444;padding:1px 4px;height:100%">C:\\Users\\you\\AppData\\Local\\Programs\\${esc(app.name)}\\</div>`),
     [["Uninstall", 214, "main"], ["Cancel", 273]],
   );
   pages["uninstall-confirm"].page = pages["uninstall-confirm"].page.replace(`${esc(app.name)} setup</span>`, `${esc(app.name)} uninstall</span>`);
