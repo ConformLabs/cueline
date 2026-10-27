@@ -1,0 +1,12 @@
+{
+  "$comment": "Cueline's part of the Conform Labs installer frame (installer/common): name, 'for ...' line, logo, accent. Paths are relative to the repo root. After changing the logo or accent: node installer/common/generate-art.mjs",
+  "name": "Cueline",
+  "for": "for Adobe® Premiere Pro®",
+  "accent": { "dark": "#6EA8FF", "light": "#1F5BBF" },
+  "logo": { "dark": "brand/cueline-mark-reversed.svg", "light": "brand/cueline-mark.svg" },
+  "tile": "brand/cueline-tile.svg",
+  "out": {
+    "windows": "installer/windows/nsis/art",
+    "mac": "installer/mac/pkg/resources"
+  }
+}

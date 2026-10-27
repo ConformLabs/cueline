@@ -1,0 +1,6 @@
+#!/bin/sh
+# A developer copy of Cueline is often a symlink to its source folder: remove the link itself (never what it
+# points to) so the install writes a real folder instead of writing into the source.
+DEST="$HOME/Library/Application Support/Adobe/CEP/extensions/com.conformlabs.cueline"
+[ -L "$DEST" ] && rm "$DEST"
+exit 0

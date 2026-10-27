@@ -1,0 +1,23 @@
+# Built programs: made by scripts/build-*.sh and fetched for releases, too big for git
+extension/engine/*/
+!extension/engine/LICENSE-*.txt
+# development only: lets Chrome DevTools attach to the panel; never shipped
+extension/.debug
+extension/META-INF/
+extension/mimetype
+# release output
+dist/
+installer/mac/pkg/build/
+installer/windows/nsis/build/
+# private test media and transcripts (real footage): kept on this Mac only
+test/**/*.wav
+test/**/*.aiff
+test/timing/*.json
+test/out.json
+test/err.log
+test/fillwords*.json
+node_modules/
+.DS_Store
+
+# the first engine build (source + logs), replaced by scripts/build-engine-mac.sh
+/engine/

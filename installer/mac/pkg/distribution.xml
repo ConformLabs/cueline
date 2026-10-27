@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Template for npm run package:mac (scripts/package-mac-pkg.mjs fills in the version and the component package). -->
+<installer-gui-script minSpecVersion="2">
+    <title>Cueline</title>
+    <welcome file="welcome.html" mime-type="text/html"/>
+    <conclusion file="conclusion.html" mime-type="text/html"/>
+    <background file="background-light.tiff" alignment="bottomleft" scaling="none"/>
+    <background-darkAqua file="background-dark.tiff" alignment="bottomleft" scaling="none"/>
+    <options customize="never" require-scripts="false" hostArchitectures="arm64,x86_64"/>
+    <!-- Per-user install into the home folder only: no administrator password, nothing outside ~ is touched. -->
+    <domains enable_anywhere="false" enable_currentUserHome="true" enable_localSystem="false"/>
+    <installation-check script="checkOS()"/>
+    <script><![CDATA[
+function checkOS() {
+    if (system.compareVersions(system.version.ProductVersion, '12.0') < 0) {
+        my.result.type = 'Fatal';
+        my.result.title = 'macOS 12 or later is required';
+        my.result.message = 'Cueline needs macOS Monterey 12 or later.';
+        return false;
+    }
+    return true;
+}
+    ]]></script>
+    <choices-outline><line choice="cueline"/></choices-outline>
+    <choice id="cueline" title="Cueline" visible="false"><pkg-ref id="com.conformlabs.cueline"/></choice>
+    <pkg-ref id="com.conformlabs.cueline" version="@VERSION@" onConclusion="none">@COMPONENT@</pkg-ref>
+</installer-gui-script>

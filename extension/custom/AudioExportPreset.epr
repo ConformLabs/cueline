@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PremiereData Version="3">
+	<PresetName>WAVAudio</PresetName>
+	<PresetComments></PresetComments>
+	<PresetUserComments></PresetUserComments>
+	<PresetCreatorApp>Premiere Pro</PresetCreatorApp>
+	<PresetCreatorPostProc></PresetCreatorPostProc>
+	<ExporterName></ExporterName>
+	<ExporterClassID>1061109567</ExporterClassID>
+	<ExporterFileType>1463899717</ExporterFileType>
+	<ExportParamContainer ObjectRef="1"/>
+	<PresetID>29b58862-805a-4f09-9bc2-66846e138255</PresetID>
+	<DoAudio>true</DoAudio>
+	<DoVideo>false</DoVideo>
+	<DoEmulation>true</DoEmulation>
+	<FolderDisplayPath></FolderDisplayPath>
+	<StandardFilters Version="1">
+		<TimeInterpolationType>0</TimeInterpolationType>
+		<Rotation>0.</Rotation>
+		<CropState>false</CropState>
+		<CropRect>0,0,0,0</CropRect>
+		<CropType>0</CropType>
+		<DeinterlaceState>false</DeinterlaceState>
+		<UseMaximumRenderQuality>false</UseMaximumRenderQuality>
+		<UsePreview>true</UsePreview>
+		<UseFrameBlending>false</UseFrameBlending>
+		<CustomStartTime>-101606400000000000</CustomStartTime>
+		<RenderAlphaOnly>false</RenderAlphaOnly>
+		<MaximumFileSize>0</MaximumFileSize>
+		<UseProxiesForExport>false</UseProxiesForExport>
+		<DoExportCR>false</DoExportCR>
+	</StandardFilters>
+	<ExportXMPOptionKey>10</ExportXMPOptionKey>
+	<StandardUserFilters ObjectRef="17"/>
+	<IngestPreset>false</IngestPreset>
+	<IngestCopyEnabled>false</IngestCopyEnabled>
+	<IngestCopyPath></IngestCopyPath>
+	<IngestCopyVerificationType>-1</IngestCopyVerificationType>
+	<IngestTranscodeEnabled>false</IngestTranscodeEnabled>
+	<IngestTranscodePath></IngestTranscodePath>
+	<IngestTranscodePresetName></IngestTranscodePresetName>
+	<IngestTranscodeExporterModuleName></IngestTranscodeExporterModuleName>
+	<IngestNamingEnabled>false</IngestNamingEnabled>
+	<IngestNamingPreset></IngestNamingPreset>
+	<IngestMetadataEnabled>false</IngestMetadataEnabled>
+	<IngestMetadataPreset></IngestMetadataPreset>
+	<IngestPresetUserComments></IngestPresetUserComments>
+	<IngestAnalysisEnabled>false</IngestAnalysisEnabled>
+	<DoEffects>true</DoEffects>
+	<DoCaptions>true</DoCaptions>
+	<DoMetadata>true</DoMetadata>
+	<ExporterParamContainer ObjectID="1" ClassID="5c20a4a5-5e7c-4032-85b8-26ad4531fe7b" Version="1">
+		<ParamContainerItems Version="1">
+			<ParamContainerItem Index="0" ObjectRef="2"/>
+		</ParamContainerItems>
+		<ContainedParamsVersion>1</ContainedParamsVersion>
+	</ExporterParamContainer>
+	<ExporterParam ObjectID="2" ClassID="9f049ab7-d48f-43e9-a8ca-4d7f21233625" Version="1">
+		<ParamType>10</ParamType>
+		<ParamOrdinalValue>0</ParamOrdinalValue>
+		<ParamIdentifier>0</ParamIdentifier>
+		<ParamName></ParamName>
+		<ExporterChildParams ObjectRef="3"/>
+	</ExporterParam>
+	<ExporterParamContainer ObjectID="3" ClassID="5c20a4a5-5e7c-4032-85b8-26ad4531fe7b" Version="1">
+		<ParamContainerItems Version="1">
+			<ParamContainerItem Index="0" ObjectRef="4"/>
+		</ParamContainerItems>
+		<ContainedParamsVersion>1</ContainedParamsVersion>
+	</ExporterParamContainer>
+	<ExporterParam ObjectID="4" ClassID="9f049ab7-d48f-43e9-a8ca-4d7f21233625" Version="1">
+		<ParamType>8</ParamType>
+		<ParamOrdinalValue>0</ParamOrdinalValue>
+		<ParamIdentifier>ADBEAudioTabGroup</ParamIdentifier>
+		<ExporterChildParams ObjectRef="5"/>
+	</ExporterParam>
+	<ExporterParamContainer ObjectID="5" ClassID="5c20a4a5-5e7c-4032-85b8-26ad4531fe7b" Version="1">
+		<ParamContainerItems Version="1">
+			<ParamContainerItem Index="0" ObjectRef="6"/>
+			<ParamContainerItem Index="1" ObjectRef="9"/>
+		</ParamContainerItems>
+		<ContainedParamsVersion>1</ContainedParamsVersion>
+	</ExporterParamContainer>
+	<ExporterParam ObjectID="6" ClassID="9f049ab7-d48f-43e9-a8ca-4d7f21233625" Version="1">
+		<ParamType>8</ParamType>
+		<ParamOrdinalValue>0</ParamOrdinalValue>
+		<ParamIdentifier>ADBEAudioCodecGroup</ParamIdentifier>
+		<ExporterChildParams ObjectRef="7"/>
+	</ExporterParam>
+	<ExporterParamContainer ObjectID="7" ClassID="5c20a4a5-5e7c-4032-85b8-26ad4531fe7b" Version="1">
+		<ParamContainerItems Version="1">
+			<ParamContainerItem Index="0" ObjectRef="8"/>
+		</ParamContainerItems>
+		<ContainedParamsVersion>1</ContainedParamsVersion>
+	</ExporterParamContainer>
+	<ExporterParam ObjectID="8" ClassID="9f049ab7-d48f-43e9-a8ca-4d7f21233625" Version="1">
+		<ParamType>2</ParamType>
+		<ParamOrdinalValue>0</ParamOrdinalValue>
+		<ParamMaxValue>-1</ParamMaxValue>
+		<ParamIsIndependant>true</ParamIsIndependant>
+		<ParamIdentifier>ADBEAudioCodec</ParamIdentifier>
+	</ExporterParam>
+	<ExporterParam ObjectID="9" ClassID="9f049ab7-d48f-43e9-a8ca-4d7f21233625" Version="1">
+		<ParamType>8</ParamType>
+		<ParamOrdinalValue>1</ParamOrdinalValue>
+		<ParamIdentifier>ADBEBasicAudioGroup</ParamIdentifier>
+		<ExporterChildParams ObjectRef="10"/>
+	</ExporterParam>
+	<ExporterParamContainer ObjectID="10" ClassID="5c20a4a5-5e7c-4032-85b8-26ad4531fe7b" Version="1">
+		<ParamContainerItems Version="1">
+			<ParamContainerItem Index="0" ObjectRef="11"/>
+			<ParamContainerItem Index="1" ObjectRef="12"/>
+			<ParamContainerItem Index="2" ObjectRef="13"/>
+			<ParamContainerItem Index="3" ObjectRef="14"/>
+			<ParamContainerItem Index="4" ObjectRef="15"/>
+			<ParamContainerItem Index="5" ObjectRef="16"/>
+		</ParamContainerItems>
+		<ContainedParamsVersion>1</ContainedParamsVersion>
+	</ExporterParamContainer>
+	<ExporterParam ObjectID="11" ClassID="9f049ab7-d48f-43e9-a8ca-4d7f21233625" Version="1">
+		<ParamType>2</ParamType>
+		<ParamOrdinalValue>0</ParamOrdinalValue>
+		<ParamMaxValue>-1</ParamMaxValue>
+		<ParamIsHidden>true</ParamIsHidden>
+		<ParamIdentifier>ADBEAudioCodec</ParamIdentifier>
+	</ExporterParam>
+	<ExporterParam ObjectID="12" ClassID="d0f6b8af-8ddb-4381-acf8-3e817480d07d" Version="1">
+		<ParamType>7</ParamType>
+		<ParamOrdinalValue>1</ParamOrdinalValue>
+		<ParamIsHidden>true</ParamIsHidden>
+		<ParamIdentifier>ADBEAudioCodecPrefsButton</ParamIdentifier>
+	</ExporterParam>
+	<ExporterParam ObjectID="13" ClassID="9f049ab7-d48f-43e9-a8ca-4d7f21233625" Version="1">
+		<ParamValue>16000</ParamValue>
+		<ParamType>2</ParamType>
+		<ParamOrdinalValue>2</ParamOrdinalValue>
+		<ParamMinValue>8000</ParamMinValue>
+		<ParamMaxValue>192000</ParamMaxValue>
+		<ParamIsIndependant>true</ParamIsIndependant>
+		<ParamIdentifier>ADBEAudioRatePerSecond</ParamIdentifier>
+	</ExporterParam>
+	<ExporterParam ObjectID="14" ClassID="9f049ab7-d48f-43e9-a8ca-4d7f21233625" Version="1">
+		<ParamValue>2</ParamValue>
+		<ParamType>2</ParamType>
+		<ParamOrdinalValue>3</ParamOrdinalValue>
+		<ParamMinValue>-51</ParamMinValue>
+		<ParamMaxValue>32</ParamMaxValue>
+		<ParamIsIndependant>true</ParamIsIndependant>
+		<ParamIdentifier>ADBEAudioNumChannels</ParamIdentifier>
+	</ExporterParam>
+	<ExporterParam ObjectID="15" ClassID="9f049ab7-d48f-43e9-a8ca-4d7f21233625" Version="1">
+		<ParamValue>1</ParamValue>
+		<ParamType>2</ParamType>
+		<ParamOrdinalValue>4</ParamOrdinalValue>
+		<ParamMaxValue>4</ParamMaxValue>
+		<ParamIsIndependant>true</ParamIsIndependant>
+		<ParamIdentifier>ADBEAudioSampleType</ParamIdentifier>
+	</ExporterParam>
+	<ExporterParam ObjectID="16" ClassID="d0f6b8af-8ddb-4381-acf8-3e817480d07d" Version="1">
+		<ParamType>1</ParamType>
+		<ParamOrdinalValue>5</ParamOrdinalValue>
+		<ParamIdentifier>SeparateMonoFiles</ParamIdentifier>
+	</ExporterParam>
+	<StandardFilterContainer ObjectID="17" ClassID="00c9f895-891b-412d-9180-38b10a29c9a8" Version="6">
+		<FilterCount>10</FilterCount>
+		<FilterItem Index="0" ObjectRef="18"/>
+		<FilterItem Index="1" ObjectRef="19"/>
+		<FilterItem Index="2" ObjectRef="20"/>
+		<FilterItem Index="3" ObjectRef="21"/>
+		<FilterItem Index="4" ObjectRef="22"/>
+		<FilterItem Index="5" ObjectRef="23"/>
+		<FilterItem Index="6" ObjectRef="24"/>
+		<FilterItem Index="7" ObjectRef="25"/>
+		<FilterItem Index="8" ObjectRef="26"/>
+		<FilterItem Index="9" ObjectRef="27"/>
+	</StandardFilterContainer>
+	<StandardFilterWrapperColorSpaceTransform ObjectID="18" ClassID="1631c0b1-163d-4fb8-a3c2-f179d431cdbb" Version="1">
+		<Enabled>false</Enabled>
+		<ToneMappingGain>1.</ToneMappingGain>
+		<ToneMappingDesaturation>1.</ToneMappingDesaturation>
+		<ToneMappingMethod>0</ToneMappingMethod>
+		<UiInstance>0</UiInstance>
+		<BaseStorageVersion>1</BaseStorageVersion>
+	</StandardFilterWrapperColorSpaceTransform>
+	<StandardFilterWrapperLumetri ObjectID="19" ClassID="a3da719f-5b68-4fbe-af95-d0c3e0127e5e" Version="1">
+		<Enabled>false</Enabled>
+		<LoadedEffectName></LoadedEffectName>
+		<UiInstance>0</UiInstance>
+		<BaseStorageVersion>1</BaseStorageVersion>
+	</StandardFilterWrapperLumetri>
+	<StandardFilterWrapperSDRConform ObjectID="20" ClassID="1631c0b1-163d-4fb8-a3c2-f179d431cdba" Version="1">
+		<Enabled>false</Enabled>
+		<Brightness>10.</Brightness>
+		<Contrast>0.</Contrast>
+		<SoftKnee>100.</SoftKnee>
+		<UiInstance>0</UiInstance>
+		<BaseStorageVersion>1</BaseStorageVersion>
+	</StandardFilterWrapperSDRConform>
+	<StandardFilterWrapperOverlay ObjectID="21" ClassID="13830401-7ec6-45df-a2e1-d8f629e899b2" Version="1">
+		<Enabled>false</Enabled>
+		<ReferencePixelAspectRatio>1.</ReferencePixelAspectRatio>
+		<ReferenceFrameHeight>0</ReferenceFrameHeight>
+		<ReferenceFrameWidth>0</ReferenceFrameWidth>
+		<AbsoluteSizing>false</AbsoluteSizing>
+		<PositionY>0.</PositionY>
+		<PositionX>0.</PositionX>
+		<PositionIndex>4</PositionIndex>
+		<PosSizeStorageVersion>1</PosSizeStorageVersion>
+		<SourceFilePath></SourceFilePath>
+		<Size>100.</Size>
+		<Opacity>100</Opacity>
+		<UiInstance>0</UiInstance>
+		<BaseStorageVersion>1</BaseStorageVersion>
+	</StandardFilterWrapperOverlay>
+	<StandardFilterWrapperAlphaAdjust ObjectID="22" ClassID="d3391303-f3a9-4932-a3b1-3a5fcb28dfb2" Version="1">
+		<Enabled>false</Enabled>
+		<AlphaAdjust_MaskOnly>false</AlphaAdjust_MaskOnly>
+		<AlphaAdjust_InvertAlpha>false</AlphaAdjust_InvertAlpha>
+		<AlphaAdjust_IgnoreAlpha>false</AlphaAdjust_IgnoreAlpha>
+		<AlphaAdjust_Opacity>100.</AlphaAdjust_Opacity>
+		<UiInstance>0</UiInstance>
+		<BaseStorageVersion>1</BaseStorageVersion>
+	</StandardFilterWrapperAlphaAdjust>
+	<StandardFilterWrapperClipName ObjectID="23" ClassID="2cf9288f-faea-4461-ad17-89705ab2b63a" Version="1">
+		<Enabled>false</Enabled>
+		<ReferencePixelAspectRatio>1.</ReferencePixelAspectRatio>
+		<ReferenceFrameHeight>0</ReferenceFrameHeight>
+		<ReferenceFrameWidth>0</ReferenceFrameWidth>
+		<AbsoluteSizing>false</AbsoluteSizing>
+		<PositionY>0.</PositionY>
+		<PositionX>0.</PositionX>
+		<PositionIndex>1</PositionIndex>
+		<PosSizeStorageVersion>1</PosSizeStorageVersion>
+		<Size>15.</Size>
+		<Opacity>40</Opacity>
+		<Suffix></Suffix>
+		<TextType>1</TextType>
+		<Prefix></Prefix>
+		<UiInstance>0</UiInstance>
+		<BaseStorageVersion>1</BaseStorageVersion>
+	</StandardFilterWrapperClipName>
+	<StandardFilterWrapperTimecode ObjectID="24" ClassID="50810324-4cbd-4897-9eff-e328663a83c9" Version="1">
+		<Enabled>false</Enabled>
+		<ReferencePixelAspectRatio>1.</ReferencePixelAspectRatio>
+		<GenerateTimecode>0</GenerateTimecode>
+		<GenerateFormat>2</GenerateFormat>
+		<SourceTypeIndex>0</SourceTypeIndex>
+		<ParameterOpacity>40</ParameterOpacity>
+		<ReferenceFrameHeight>0</ReferenceFrameHeight>
+		<ReferenceFrameWidth>0</ReferenceFrameWidth>
+		<AbsoluteSizing>false</AbsoluteSizing>
+		<PositionY>0.</PositionY>
+		<PositionX>0.</PositionX>
+		<PositionIndex>7</PositionIndex>
+		<PosSizeStorageVersion>1</PosSizeStorageVersion>
+		<Offset>0</Offset>
+		<Size>15.</Size>
+		<UiInstance>0</UiInstance>
+		<BaseStorageVersion>1</BaseStorageVersion>
+	</StandardFilterWrapperTimecode>
+	<StandardFilterWrapperTimeCarving ObjectID="25" ClassID="b468411d-5d5a-4900-ad11-cd34ab0622f9" Version="2">
+		<Enabled>false</Enabled>
+		<SkipSlates>false</SkipSlates>
+		<TargetDuration>21073167360000</TargetDuration>
+		<CarveRatio>1.</CarveRatio>
+		<Mode>1</Mode>
+		<UiInstance>0</UiInstance>
+		<BaseStorageVersion>1</BaseStorageVersion>
+	</StandardFilterWrapperTimeCarving>
+	<StandardFilterWrapperVideoLimiter ObjectID="26" ClassID="767863e8-287f-4df8-b8fc-88af92dc789d" Version="2">
+		<Enabled>false</Enabled>
+		<CompressionBeforeClippingOption>0</CompressionBeforeClippingOption>
+		<GamutWarningColor>0</GamutWarningColor>
+		<EnableGamutWarning>false</EnableGamutWarning>
+		<ClipLevel>1</ClipLevel>
+		<UiInstance>0</UiInstance>
+		<BaseStorageVersion>1</BaseStorageVersion>
+	</StandardFilterWrapperVideoLimiter>
+	<StandardFilterWrapperLoudnessNormalization ObjectID="27" ClassID="39b71d0a-9f22-4b23-9f61-5600f10e7047" Version="1">
+		<Enabled>true</Enabled>
+		<CustomLoudnessReportLocation></CustomLoudnessReportLocation>
+		<UseCustomLoudnessReportLocation>false</UseCustomLoudnessReportLocation>
+		<UseCustomTruePeakLimiterSettings>false</UseCustomTruePeakLimiterSettings>
+		<LoudnessChannelGrouping Encoding="base64" Checksum="4018651919">eyJjdXN0b21EYXRhIjp7InVzZVNjZW5hcmlvIjoyfSwibUFsbG93ZWRDaGFubmVsTGF5b3V0VmVjdG9yIjpbW3siY2hhbm5lbGxhYmVsIjowfV0sW3siY2hhbm5lbGxhYmVsIjoxMDB9LHsiY2hhbm5lbGxhYmVsIjoxMDF9XSxbeyJjaGFubmVsbGFiZWwiOjEwMH0seyJjaGFubmVsbGFiZWwiOjEwMX0seyJjaGFubmVsbGFiZWwiOjEwMn0seyJjaGFubmVsbGFiZWwiOjEwM30seyJjaGFubmVsbGFiZWwiOjEwNH0seyJjaGFubmVsbGFiZWwiOjEwNX1dXSwibUNoYW5uZWxMYXlvdXRWZWN0b3IiOltdLCJtTWF4TnVtQXVkaW9DaGFubmVscyI6MiwibU1heE51bUF1ZGlvQ2hhbm5lbHNQZXJTdHJlYW0iOjIsIm1NYXhOdW1BdWRpb1N0cmVhbXMiOjMyLCJtVmVyc2lvbiI6MX0=</LoudnessChannelGrouping>
+		<WriteLoudnessReport>false</WriteLoudnessReport>
+		<ReleaseTime>200.</ReleaseTime>
+		<LookAheadTime>12.</LookAheadTime>
+		<TruePeakLevel>-2.</TruePeakLevel>
+		<LoudnessTolerance>2.</LoudnessTolerance>
+		<TargetLoudness>-24.</TargetLoudness>
+		<LoudnessStandard>0</LoudnessStandard>
+		<UiInstance>0</UiInstance>
+		<BaseStorageVersion>1</BaseStorageVersion>
+	</StandardFilterWrapperLoudnessNormalization>
+</PremiereData>

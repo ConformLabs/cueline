@@ -1,0 +1,10 @@
+const C = require("../../extension/js/cues.js"), E = require("../../extension/js/engine.js");
+const words = require("./a_vad_dtw.json").transcription.filter(s => s.text.trim() && !s.text.trim().startsWith("[")).map(s => ({ text: s.text.trim(), start: s.offsets.from / 1000, end: s.offsets.to / 1000, p: 1 }));
+const env = E.speechEnvelope(__dirname + "/clip48.wav"), spec = { ...C.PRESETS.broadcast, fps: 25 };
+const snap = (cs) => C.snapToSpeech(cs, env, spec);
+const cues = snap(C.buildCues(words, spec));
+const kinds = (cs) => { const m = {}; for (const r of C.checkAll(cs, spec)) for (const x of r.issues) m[x.kind] = (m[x.kind] || 0) + 1; return m; };
+const t0 = Date.now(), pv = C.fixPreview(cues, spec, snap);
+console.log("before:", cues.length, "captions", JSON.stringify(kinds(cues)));
+console.log("after: ", pv.cues.length, "captions", JSON.stringify(kinds(pv.cues)), `solved ${pv.solved}, left ${pv.left}, ${Date.now() - t0} ms`);
+const again = C.fixPreview(pv.cues, spec, snap); console.log("second Fix all solves:", again.solved);
