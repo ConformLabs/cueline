@@ -1,6 +1,7 @@
 {
   "$comment": "Cueline's part of the Conform Labs installer frame (installer/common): name, 'for ...' line, logo, accent. Paths are relative to the repo root. After changing the logo or accent: node installer/common/generate-art.mjs preview (optional): the wording the page previews show (generate-art.mjs --preview); the real pages use the .nsi and the Mac page bodies.",
   "name": "Cueline",
+  "wordmark": "Cueline Captions",
   "for": "for Adobe® Premiere Pro®",
   "accent": {
     "dark": "#6EA8FF",

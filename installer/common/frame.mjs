@@ -111,8 +111,10 @@ export function appArt(app, mode) {
 }
 
 /** The app's name split for the wordmark: "Surehand MCP" -> ["Surehand", "MCP"] (the last word is set lighter). */
+// the logo's words: app.json "wordmark" when an app's logo says more than its name (Cueline's says "Cueline Captions"),
+// else the name; the last word is drawn lighter, as "MCP" in "Surehand MCP"
 export function wordmark(app) {
-  const words = app.name.split(" ");
+  const words = (app.wordmark || app.name).split(" ");
   return words.length > 1 ? [words.slice(0, -1).join(" "), words.at(-1)] : [app.name, ""];
 }
 
