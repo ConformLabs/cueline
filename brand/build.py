@@ -20,6 +20,7 @@ FONT = os.path.join(D, "fonts", "SpaceGrotesk-Variable-latin.woff2")
 INK, IVORY = "#14161A", "#F2EFE8"
 BLUE_LIGHT, BLUE_DARK = "#1F5BBF", "#6EA8FF"          # product-cueline on ivory / on ink
 MUTED_LIGHT, MUTED_DARK = "#5C5E62", "#A6A49D"
+SUB_LIGHT, SUB_DARK = "#4A4944", "#C9C6BD"   # the lockup's "for Adobe® ..." line (as in Surehand's lockup)
 
 # ---------- the mark ----------
 LINES = "M58 48H160M40 82H90M40 118H90M58 152H160"      # stroke 18
@@ -43,8 +44,9 @@ def tiny(fg, accent):
     return f'<path d="{TINY_LINES}" fill="none" stroke="{fg}" stroke-width="30"/><path d="{TINY_ANCHOR}" fill="{accent}"/>'
 
 
-def svg(w, h, body, label="Cueline"):
-    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w:g} {h:g}" role="img" aria-label="{label}">'
+def svg(w, h, body, label="Cueline", size=None):
+    dims = f' width="{size[0]}" height="{size[1]}"' if size else ""
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w:g} {h:g}"{dims} role="img" aria-label="{label}">'
             f'<title>{label}</title>{body}</svg>')
 
 
@@ -78,25 +80,57 @@ def cap_height(w):
     f = font(w); return f["OS/2"].sCapHeight / f["head"].unitsPerEm
 
 
+from fontTools.pens.boundsPen import BoundsPen
+
+
+def ink(s, w, size, track=0.0):
+    """The ink box of a line of type: (left of the first glyph, right of the last, top above the baseline)."""
+    f = font(w); gs = f.getGlyphSet(); cmap = f.getBestCmap(); sc = size / f["head"].unitsPerEm
+    left, right, top, x = None, 0, 0, 0
+    for ch in s:
+        g = cmap[ord(ch)]; bp = BoundsPen(gs); gs[g].draw(bp)
+        if bp.bounds:
+            if left is None: left = x + bp.bounds[0] * sc
+            right = x + bp.bounds[2] * sc; top = max(top, bp.bounds[3] * sc)
+        x += f["hmtx"][g][0] * sc + track * size
+    return left, right, top
+
+
+# The lockup, measured from Surehand's (brand/png/lockup-*.png in the Surehand repository, 1040x208 at 2x) so the two
+# products' headers match: a 520x104 canvas; the mark's ink in x 29..~86, y 23..80.5; the name's ink from x 115.5,
+# 34 tall on a baseline at 55.5 (Space Grotesk 600, tracking -0.044); "for Adobe® ..." from x 114, 12 tall on a
+# baseline at 83.5 (Space Grotesk 600, tracking -0.033).
+LOCK_W, LOCK_H = 520, 104
+NAME_TRACK, SUB_TRACK = -0.044, -0.033
+
+
 def lockup(fg, accent, muted, with_mark=True, sub=True, endorse=False):
-    size = 100; ch = cap_height(600) * size
-    x0 = 256 if with_mark else 0
-    top = 100 - ch / 2 if with_mark else 0
-    base = top + ch
-    body = f"<g>{mark(fg, accent)}</g>" if with_mark else ""
-    d, w = text_path("Cueline", 600, size, x0, base, -0.015)
+    if not with_mark and not sub:   # the wordmark alone, on its own tight canvas
+        size = 34 / ink("Cueline", 600, 1, NAME_TRACK)[2]
+        l, r, t = ink("Cueline", 600, size, NAME_TRACK)
+        d, _ = text_path("Cueline", 600, size, -l, t, NAME_TRACK)
+        return svg(round(r - l + 1), round(t + 1), f'<path d="{d}" fill="{fg}"/>')
+    # the mark: its ink (x 40..160, y 39..161 in the 200 grid) scaled to Surehand's mark height
+    sc = 57.5 / 122
+    body = f'<g transform="translate({29 - 40 * sc:.3f} {23 - 39 * sc:.3f}) scale({sc:.5f})">{mark(fg, accent)}</g>'
+    size = 34 / ink("Cueline", 600, 1, NAME_TRACK)[2]
+    l, _, _ = ink("Cueline", 600, size, NAME_TRACK)
+    d, _ = text_path("Cueline", 600, size, 115.5 - l, 55.5, NAME_TRACK)
     body += f'<path d="{d}" fill="{fg}"/>'
-    width, height = w, (200 if with_mark else ch)
-    y = base
+    height = LOCK_H
     if sub:
-        sz = 34; y += sz * 1.5
-        d, ws = text_path("for Adobe® Premiere Pro®", 500, sz, x0, y, 0)
-        body += f'<path d="{d}" fill="{muted}"/>'; width = max(width, ws); height = max(height, y + sz * 0.3)
-    if endorse:
-        sz = 22; y += sz * 1.9
-        d, we = text_path("A CONFORM LABS PRODUCT", 500, sz, x0, y, 0.08)
-        body += f'<path d="{d}" fill="{muted}"/>'; width = max(width, we); height = max(height, y + sz * 0.3)
-    return svg(round(width + 2), round(height), body)
+        line = "for Adobe® Premiere Pro®"
+        ssize = 12 / ink("for Adobe® After Effects®", 600, 1, SUB_TRACK)[2]   # the same type size as Surehand's line
+        l, _, _ = ink(line, 600, ssize, SUB_TRACK)
+        d, _ = text_path(line, 600, ssize, 114 - l, 83.5, SUB_TRACK)
+        body += f'<path d="{d}" fill="{muted}"/>'
+    if endorse:   # Surehand has none: the endorsement line under it, the canvas taller by one line
+        esize = 9
+        l, _, _ = ink("A CONFORM LABS PRODUCT", 500, esize, 0.08)
+        d, _ = text_path("A CONFORM LABS PRODUCT", 500, esize, 114 - l, 104, 0.08)
+        body += f'<path d="{d}" fill="{muted}"/>'
+        height = 116
+    return svg(LOCK_W, height, body)
 
 
 # ---------- write ----------
@@ -107,21 +141,21 @@ def save(name, content, pngs=()):
         cairosvg.svg2png(bytestring=content.encode(), write_to=os.path.join(PNG, out), output_width=width)
 
 
-icon_full = svg(200, 200, tile(INK, mark(IVORY, BLUE_DARK), 0.72, 28))
-icon_small = svg(200, 200, tile(INK, small(IVORY, BLUE_DARK), 0.76, 24))
-icon_16 = svg(200, 200, tile(INK, tiny(IVORY, BLUE_DARK), 0.84, 16))
+icon_full = svg(200, 200, tile(INK, mark(IVORY, BLUE_DARK), 0.72, 28), size=(200, 200))
+icon_small = svg(200, 200, tile(INK, small(IVORY, BLUE_DARK), 0.76, 24), size=(200, 200))
+icon_16 = svg(200, 200, tile(INK, tiny(IVORY, BLUE_DARK), 0.84, 16), size=(200, 200))
 
-save("cueline-mark.svg", svg(200, 200, mark(INK, BLUE_LIGHT)), [("mark-128.png", 128), ("mark-512.png", 512)])
-save("cueline-mark-reversed.svg", svg(200, 200, mark(IVORY, BLUE_DARK)), [("mark-reversed-128.png", 128), ("mark-reversed-512.png", 512)])
-save("cueline-mark-mono.svg", svg(200, 200, mark(INK, INK)))
-save("cueline-icon.svg", icon_full, [(f"icon-{s}.png", s) for s in (128, 256, 512, 1024)])
+save("cueline-mark.svg", svg(200, 200, mark(INK, BLUE_LIGHT), size=(220, 220)), [("mark-128.png", 128), ("mark-512.png", 512)])
+save("cueline-mark-reversed.svg", svg(200, 200, mark(IVORY, BLUE_DARK), size=(220, 220)), [("mark-reversed-128.png", 128), ("mark-reversed-512.png", 512)])
+save("cueline-mark-mono.svg", svg(200, 200, mark(INK, INK), size=(220, 220)))
+save("cueline-icon.svg", icon_full, [(f"icon-{s}.png", s) for s in (128, 256, 400, 512, 1024)])
 save("cueline-icon-small.svg", icon_small, [(f"icon-{s}.png", s) for s in (32, 48, 64)])
 save("cueline-icon-16.svg", icon_16, [("icon-16.png", 16)])
-save("cueline-tile.svg", svg(200, 200, tile(BLUE_DARK, small(INK, INK), 0.76, 24, rx=46)), [("tile-256.png", 256)])
-save("cueline-lockup.svg", lockup(INK, BLUE_LIGHT, MUTED_LIGHT), [("lockup-light.png", 1200)])
-save("cueline-lockup-reversed.svg", lockup(IVORY, BLUE_DARK, MUTED_DARK), [("lockup-dark.png", 1200)])
-save("cueline-lockup-endorsed.svg", lockup(INK, BLUE_LIGHT, MUTED_LIGHT, endorse=True), [("lockup-endorsed-light.png", 1200)])
-save("cueline-lockup-endorsed-reversed.svg", lockup(IVORY, BLUE_DARK, MUTED_DARK, endorse=True), [("lockup-endorsed-dark.png", 1200)])
+save("cueline-tile.svg", svg(200, 200, tile(BLUE_DARK, small(INK, INK), 0.76, 24, rx=46), size=(200, 200)), [("tile-256.png", 256)])
+save("cueline-lockup.svg", lockup(INK, BLUE_LIGHT, SUB_LIGHT), [("lockup-light.png", 1040)])
+save("cueline-lockup-reversed.svg", lockup(IVORY, BLUE_DARK, SUB_DARK), [("lockup-dark.png", 1040)])
+save("cueline-lockup-endorsed.svg", lockup(INK, BLUE_LIGHT, SUB_LIGHT, endorse=True), [("lockup-endorsed-light.png", 1040)])
+save("cueline-lockup-endorsed-reversed.svg", lockup(IVORY, BLUE_DARK, SUB_DARK, endorse=True), [("lockup-endorsed-dark.png", 1040)])
 save("cueline-wordmark.svg", lockup(INK, BLUE_LIGHT, MUTED_LIGHT, with_mark=False, sub=False))
 save("cueline-wordmark-reversed.svg", lockup(IVORY, BLUE_DARK, MUTED_DARK, with_mark=False, sub=False))
 

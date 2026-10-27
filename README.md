@@ -1,7 +1,7 @@
 <h1>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="brand/png/lockup-dark.png">
-    <img src="brand/png/lockup-light.png" width="420" alt="Cueline for Adobe® Premiere Pro®">
+    <img src="brand/png/lockup-light.png" width="520" alt="Cueline for Adobe® Premiere Pro®">
   </picture>
 </h1>
 <p>
