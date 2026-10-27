@@ -343,4 +343,4 @@ function transcribe(opts, cb) {
   return { promise, stop() { stopped = true; try { proc.kill(); } catch (e) {} } };
 }
 
-module.exports = { MODELS, modelsDir, dataDir, binaryPath, engineStatus, listModels, diskUse, downloadModel, ensureVad, removeModel, transcribe, speechEnvelope, speakerStatus, ensureSpeakerModels, diarize, voiceprints };
+module.exports = { MODELS, modelsDir, dataDir, binaryPath, engineStatus, listModels, diskUse, downloadModel, ensureVad, removeModel, transcribe, speechEnvelope, speakerStatus, ensureSpeakerModels, diarize, voiceprints, VAD_MODEL, SPEAKER_MODELS };

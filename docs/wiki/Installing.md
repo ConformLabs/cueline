@@ -27,10 +27,22 @@ The package is signed and notarized by Apple. It installs the panel to
 Setup is signed. It installs the panel to `%APPDATA%\Adobe\CEP\extensions\com.conformlabs.cueline` and adds
 Cueline to **Settings › Apps**, where you can uninstall it. Running Setup again offers **Update** or **Uninstall**.
 
-## First run
+## Speech models
 
-The panel asks for a speech model the first time (**Models**). It downloads from Hugging Face and is kept in
-Cueline's data folder ([Settings and files](Settings-and-files)), so updating Cueline never downloads it again.
+Both installers can download the speech models while they install, so the panel is ready the first time:
+
+- **Mac:** on **Installation Type**, tick the models you want.
+- **Windows:** on **Choose speech models**.
+
+**ivrit.ai large-v3-turbo** (Hebrew, 1.6 GB) and the **speaker and silence models** (35 MB) are ticked. A model
+already on your computer is not downloaded again. A download that fails doesn't stop the install; get it later in the
+panel's **Models**. See [Models and languages](Models-and-languages) for what each one is for.
+
+Models are kept in Cueline's data folder ([Settings and files](Settings-and-files)), so updating Cueline never
+downloads them again.
+
+For a silent Windows install: `Cueline-Setup-<version>.exe /S` downloads the ticked ones; `/MODELS=ivrit-turbo,turbo,helpers`
+picks others (ids: `ivrit-turbo`, `turbo`, `ivrit-large`, `large`, `small`, `helpers`); `/MODELS=none` downloads none.
 
 ## Uninstalling
 

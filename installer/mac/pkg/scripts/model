@@ -1,0 +1,40 @@
+#!/bin/bash
+# The postinstall of a model choice's payload-free package (scripts/package-mac-pkg.mjs fills in FILES from
+# installer/models.mjs): downloads its files into ~/Library/Application Support/Cueline/models, where the Cueline panel
+# looks. A file is kept only when it is exactly its size; one already there at that size is not downloaded again.
+# Never fails the package: a model that did not download can be downloaded later in the panel (Models). What happened
+# goes to ~/Library/Application Support/Cueline/install.log.
+FILES=(@FILES@) # "file|url|bytes"
+
+# the home folder this package was installed into: the install location is <home>/Library/Application Support/...
+DEST="${2:-}"
+TARGET_HOME="${DEST%/Library/Application Support/Adobe/CEP/extensions/com.conformlabs.cueline}"
+{ [ -n "$TARGET_HOME" ] && [ "$TARGET_HOME" != "$DEST" ] && [ -d "$TARGET_HOME" ]; } || TARGET_HOME="$HOME"
+DATA="$TARGET_HOME/Library/Application Support/Cueline"
+MODELS="$DATA/models"
+LOG="$DATA/install.log"
+mkdir -p "$MODELS" 2>/dev/null
+
+for entry in "${FILES[@]}"; do
+  IFS='|' read -r file url bytes <<<"$entry"
+  dst="$MODELS/$file"
+  if [ -e "$dst" ] && [ "$(stat -Lf %z "$dst" 2>/dev/null)" = "$bytes" ]; then
+    echo "$(date '+%H:%M:%S') $file: already downloaded" >>"$LOG"
+    continue
+  fi
+  echo "$(date '+%H:%M:%S') $file: downloading $bytes bytes from $url" >>"$LOG"
+  if /usr/bin/curl -fsSL --retry 3 --connect-timeout 20 -o "$dst.part" "$url" 2>>"$LOG" &&
+     [ "$(stat -f %z "$dst.part" 2>/dev/null)" = "$bytes" ]; then
+    mv -f "$dst.part" "$dst" && echo "$(date '+%H:%M:%S') $file: done" >>"$LOG"
+  else
+    rm -f "$dst.part"
+    echo "$(date '+%H:%M:%S') $file: not downloaded (the panel can download it later in Models)" >>"$LOG"
+  fi
+done
+
+# a per-user package runs as that user; if it ever ran as root, the files belong to the home folder's owner
+if [ "$(id -u)" = "0" ]; then
+  OWNER="$(stat -f %Su "$TARGET_HOME" 2>/dev/null)"
+  [ -n "$OWNER" ] && [ "$OWNER" != "root" ] && chown -R "$OWNER" "$DATA" 2>/dev/null
+fi
+exit 0

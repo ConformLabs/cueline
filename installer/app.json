@@ -28,25 +28,77 @@
       ],
       [
         "Adding Cueline to Apps",
+        "done"
+      ],
+      [
+        "Downloading ivrit.ai large-v3-turbo",
         "now"
+      ],
+      [
+        "Downloading Speaker and silence models",
+        "next"
       ]
     ],
-    "now": "Adding Cueline to Apps…",
+    "now": "Downloading ivrit.ai large-v3-turbo…",
     "results": [
       [
         "done",
         "Cueline 1.0.0 is in Premiere Pro"
+      ],
+      [
+        "done",
+        "Downloaded ivrit.ai large-v3-turbo, Speaker and silence models"
       ]
     ],
     "next": [
       "Restart Premiere Pro (it is open).",
       "Open the panel: Window > Extensions > Cueline.",
-      "The first time, it downloads a speech model (about 1.6 GB)."
+      "Pick a sequence and click Transcribe."
     ],
     "help": "github.com/ConformLabs/cueline",
     "keep": "Next, Cueline is updated. Your speech models, settings and history are kept.",
     "removes": "Removes the Adobe® Premiere Pro® panel and its engine.",
     "removeAll": "Also remove the speech models, settings and history",
-    "unconfirm": "Cueline will be removed from Premiere Pro. Your speech models, settings and history (in %APPDATA%\\Cueline) are kept, unless you chose to remove them too."
+    "unconfirm": "Cueline will be removed from Premiere Pro. Your speech models, settings and history (in %APPDATA%\\Cueline) are kept, unless you chose to remove them too.",
+    "choices": {
+      "title": "Choose speech models",
+      "subtitle": "Ticked models download now. Get others later in the panel's Models.",
+      "label": "SPEECH MODELS",
+      "rows": [
+        [
+          "ivrit.ai large-v3-turbo",
+          "Hebrew, fast · 1.6 GB",
+          true
+        ],
+        [
+          "Whisper large-v3-turbo",
+          "99 languages, fast · 1.6 GB",
+          false
+        ],
+        [
+          "ivrit.ai large-v3",
+          "Hebrew, fewer errors on names · 3.1 GB",
+          false
+        ],
+        [
+          "Whisper large-v3",
+          "99 languages, most accurate · 3.1 GB",
+          false
+        ],
+        [
+          "Whisper small",
+          "99 languages, quick drafts · 488 MB",
+          false
+        ]
+      ],
+      "acrossLabel": "ALSO",
+      "across": [
+        [
+          "Speaker and silence models",
+          "Speakers by voice and skip silence · 35 MB",
+          true
+        ]
+      ]
+    }
   }
 }

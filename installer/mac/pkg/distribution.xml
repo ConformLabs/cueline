@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Template for npm run package:mac (scripts/package-mac-pkg.mjs fills in the version and the component package). -->
+<!-- Template for npm run package:mac (scripts/package-mac-pkg.mjs fills in the version, the packages and one choice per
+     speech model from installer/models.mjs). Installation Type shows the choices directly (customize="always"):
+     Cueline (required) and the models to download now; a model already on this Mac starts unticked and says so. -->
 <installer-gui-script minSpecVersion="2">
     <title>Cueline</title>
     <welcome file="welcome.html" mime-type="text/html"/>
     <conclusion file="conclusion.html" mime-type="text/html"/>
     <background file="background-light.tiff" alignment="bottomleft" scaling="none"/>
     <background-darkAqua file="background-dark.tiff" alignment="bottomleft" scaling="none"/>
-    <options customize="never" require-scripts="false" hostArchitectures="arm64,x86_64"/>
+    <options customize="always" require-scripts="false" hostArchitectures="arm64,x86_64"/>
     <!-- Per-user install into the home folder only: no administrator password, nothing outside ~ is touched. -->
     <domains enable_anywhere="false" enable_currentUserHome="true" enable_localSystem="false"/>
     <installation-check script="checkOS()"/>
@@ -20,8 +22,16 @@ function checkOS() {
     }
     return true;
 }
+// a model's files are all in Cueline's models folder already
+function have(files) {
+    var dir = (system.env.HOME || '') + '/Library/Application Support/Cueline/models/';
+    for (var i = 0; i < files.length; i++) if (!system.files.fileExistsAtPath(dir + files[i])) return false;
+    return true;
+}
     ]]></script>
-    <choices-outline><line choice="cueline"/></choices-outline>
-    <choice id="cueline" title="Cueline" visible="false"><pkg-ref id="com.conformlabs.cueline"/></choice>
-    <pkg-ref id="com.conformlabs.cueline" version="@VERSION@" onConclusion="none">@COMPONENT@</pkg-ref>
+    <choices-outline>
+@CHOICES_OUTLINE@
+    </choices-outline>
+@CHOICES@
+@PKG_REFS@
 </installer-gui-script>

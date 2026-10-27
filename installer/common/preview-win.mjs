@@ -107,6 +107,24 @@ img.p{position:absolute;image-rendering:pixelated}`;
     header("Choose AI apps", "Surehand connects the apps you tick. You can change this later in the panel.") + inner(0, 0, 300, 9, "AI APPS", "lab muted") + rows + rule(y),
     [["Back", 164], ["Install", 214, "main"], ["Cancel", 273]],
   );
+  // an app's own choices page (installer/app.json preview.choices): two columns of rows, then rows across under a label
+  if (P.choices) {
+    const C = P.choices;
+    let cy = 11, crows = "", cpair = 0;
+    C.rows.forEach(([name, note, on, enabled = true], i) => {
+      crows += checkRow(cy, name, note, on, enabled, i % 2 ? 154 : 0, 146);
+      cpair = Math.max(cpair, note ? 23 : 15);
+      if (i % 2 || i === C.rows.length - 1) { cy += cpair; cpair = 0; }
+    });
+    if (C.across) {
+      cy += 4;
+      crows += inner(0, cy, 300, 9, esc(C.acrossLabel || "OPTIONAL"), "lab muted");
+      cy += 10;
+      for (const [name, note, on] of C.across) { crows += checkRow(cy, name, note, on); cy += note ? 23 : 15; }
+    }
+    pages.apps = page(header(C.title, C.subtitle) + inner(0, 0, 300, 9, esc(C.label), "lab muted") + crows + rule(cy),
+      [["Back", 164], ["Install", 214, "main"], ["Cancel", 273]]);
+  }
   const steps = P.steps;
   let sy = 26, sbody = "";
   for (const [t, st] of steps) {

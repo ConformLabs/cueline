@@ -22,6 +22,7 @@ import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, s
 import { basename, join, resolve } from "node:path";
 import { ROOT, listFiles, stageExtension, zxpSign, zxpVerify } from "./stage.mjs";
 import { macPage } from "../installer/common/frame.mjs";
+import { installerModels } from "../installer/models.mjs";
 
 const TEAM = "Ron Yitzhaki (PM339FMCLG)";
 const APP_IDENTITY = `Developer ID Application: ${TEAM}`;
@@ -153,13 +154,54 @@ rmSync(component);
 run("pkgutil", ["--flatten", expanded, component]);
 rmSync(expanded, { recursive: true, force: true });
 
+// one payload-free package per speech model choice (installer/models.mjs): its postinstall downloads the model
+log("Building the model packages (Installation Type's choices)");
+const models = await installerModels();
+const modelTemplate = readFileSync(join(PKG_SRC, "scripts", "model"), "utf8");
+const xml = (t) => String(t).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+for (const m of models) {
+  if (m.title.length > 30) die(`${m.id}: title too long for the Installer's list (30 characters): ${m.title}`);
+  const dir = join(BUILD, `scripts-model-${m.id}`);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "postinstall"), modelTemplate.replace("@FILES@", m.files.map((f) => JSON.stringify(`${f.file}|${f.url}|${f.bytes}`)).join(" ")));
+  chmodSync(join(dir, "postinstall"), 0o755);
+  m.pkgId = `${PKG_ID}.model.${m.id}`;
+  m.pkgFile = `cueline-model-${m.id}.pkg`;
+  run("pkgbuild", ["--nopayload", "--scripts", dir, "--install-location", INSTALL_AT, "--identifier", m.pkgId, "--version", version, join(BUILD, m.pkgFile)]);
+  // Installer's Size column and Space Required read the package's own installKBytes: give it the download's size
+  const ex = join(BUILD, `expanded-model-${m.id}`);
+  run("pkgutil", ["--expand", join(BUILD, m.pkgFile), ex]);
+  const info = join(ex, "PackageInfo"), kb = Math.ceil(m.files.reduce((a, f) => a + f.bytes, 0) / 1024);
+  let pi = readFileSync(info, "utf8");
+  pi = /<payload\b/.test(pi) ? pi.replace(/<payload\b[^>]*\/?>/, `<payload numberOfFiles="0" installKBytes="${kb}"/>`) : pi.replace(/<\/pkg-info>/, `    <payload numberOfFiles="0" installKBytes="${kb}"/>\n</pkg-info>`);
+  writeFileSync(info, pi);
+  rmSync(join(BUILD, m.pkgFile));
+  run("pkgutil", ["--flatten", ex, join(BUILD, m.pkgFile)]);
+  rmSync(ex, { recursive: true, force: true });
+}
+const choiceXml = [
+  `    <choice id="cueline" title="Cueline" description="${xml("The Premiere Pro panel and its engine, for your Mac account only.")}" enabled="false" selected="true">`,
+  `        <pkg-ref id="${PKG_ID}"/>`, "    </choice>",
+  ...models.flatMap((m) => {
+    const files = `[${m.files.map((f) => `'${f.file}'`).join(",")}]`;
+    return [
+      `    <choice id="model-${m.id}" title="${xml(m.title)}" description="${xml(`${m.note}. Downloads now, into ~/Library/Application Support/Cueline/models; or later, in the panel's Models. Already on this Mac: not downloaded again.`)}" start_selected="${m.default ? `!have(${files})` : "false"}">`,
+      `        <pkg-ref id="${m.pkgId}"/>`, "    </choice>",
+    ];
+  }),
+].join("\n");
+const refs = [`    <pkg-ref id="${PKG_ID}" version="${version}" onConclusion="none">${componentName}</pkg-ref>`,
+  // installKBytes: the download's size, so Installer's Size column and Space Required count it
+  ...models.map((m) => `    <pkg-ref id="${m.pkgId}" version="${version}" installKBytes="${Math.ceil(m.files.reduce((a, f) => a + f.bytes, 0) / 1024)}" onConclusion="none">${m.pkgFile}</pkg-ref>`)].join("\n");
+const outline = ["cueline", ...models.map((m) => `model-${m.id}`)].map((c) => `        <line choice="${c}"/>`).join("\n");
+
 log("Building the signed product archive");
 const res = join(BUILD, "resources");
 mkdirSync(res, { recursive: true });
 for (const page of ["welcome", "conclusion"]) writeFileSync(join(res, `${page}.html`), macPage(page, { version }));
 for (const image of ["background-light.tiff", "background-dark.tiff"]) copyFileSync(join(PKG_SRC, "resources", image), join(res, image));
 const dist = join(BUILD, "distribution.xml");
-writeFileSync(dist, readFileSync(join(PKG_SRC, "distribution.xml"), "utf8").replaceAll("@VERSION@", version).replaceAll("@COMPONENT@", componentName));
+writeFileSync(dist, readFileSync(join(PKG_SRC, "distribution.xml"), "utf8").replace("@CHOICES_OUTLINE@", outline).replace("@CHOICES@", choiceXml).replace("@PKG_REFS@", refs));
 mkdirSync(OUT_DIR, { recursive: true });
 const pkg = join(OUT_DIR, `Cueline-${version}.pkg`);
 rmSync(pkg, { force: true });
@@ -170,6 +212,7 @@ log("Checking the payload");
 const unpacked = join(BUILD, "unpacked");
 run("pkgutil", ["--expand-full", pkg, unpacked]);
 const payload = join(unpacked, componentName, "Payload");
+for (const m of models) if (!existsSync(join(unpacked, m.pkgFile, "Scripts", "postinstall"))) die(`${m.pkgFile}: no postinstall in the pkg`);
 const got = listFiles(payload);
 if (got.some((rel) => /(^|\/)\._/.test(rel))) die("AppleDouble files in the payload");
 if (got.sort().join("\n") !== Object.keys(staged).sort().join("\n")) die(`payload files differ from the stage:\n${got.join("\n")}`);

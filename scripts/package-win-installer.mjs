@@ -7,9 +7,10 @@
 // certificate, and wraps it in the Conform Labs Setup frame (installer/common/conformlabs.nsh).
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ROOT, listFiles, stageExtension, zxpSign } from "./stage.mjs";
+import { installerModels, nsisModels } from "../installer/models.mjs";
 
 const NSIS_DIR = join(ROOT, "installer", "windows", "nsis");
 const BUILD = join(NSIS_DIR, "build");
@@ -42,7 +43,10 @@ const [maj, min, pat] = version.split(/[.+-]/).map((n) => parseInt(n, 10) || 0);
 mkdirSync(OUT_DIR, { recursive: true });
 const outFile = join(OUT_DIR, `Cueline-Setup-${version}.exe`);
 rmSync(outFile, { force: true });
-const defines = { VERSION: version, VERSION4: `${maj}.${min}.${pat}.0`, STAGE: stage, ICON: icon, OUTFILE: outFile, ESTIMATED_KB: String(estimatedKb) };
+// the speech models offered on "Choose speech models" (sizes read now, from the servers)
+const modelsNsh = join(BUILD, "models.nsh");
+writeFileSync(modelsNsh, nsisModels(await installerModels()));
+const defines = { MODELS_NSH: modelsNsh, VERSION: version, VERSION4: `${maj}.${min}.${pat}.0`, STAGE: stage, ICON: icon, OUTFILE: outFile, ESTIMATED_KB: String(estimatedKb) };
 if (sign) defines.SIGN_CMD = `"${process.execPath}" "${signScript}"`;
 const utf8 = /utf-?8/i.test(`${process.env.LC_ALL || process.env.LC_CTYPE || process.env.LANG || ""}`);
 run("makensis", ["-V2", "-WX", "-INPUTCHARSET", "UTF8", ...Object.entries(defines).map(([k, v]) => `-D${k}=${v}`), join(NSIS_DIR, "cueline.nsi")], {

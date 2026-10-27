@@ -5,6 +5,12 @@
 ;   ICON                 brand/Cueline.ico           OUTFILE   the Setup .exe to write
 ;   ESTIMATED_KB         installed size for Add/Remove Programs
 ;   SIGN_CMD             optional: Authenticode-signs the file given as its last argument, in place
+;   MODELS_NSH           the speech models to offer (installer/models.mjs nsisModels)
+;
+; Pages: Update or uninstall (when installed) / Welcome, Choose speech models (ticked ones download during the install,
+; into %APPDATA%\Cueline\models; one already there is not offered again), progress, finish with what happened.
+; A silent Setup (/S) downloads the default models it doesn't have yet; /MODELS=ivrit-turbo,helpers picks others,
+; /MODELS=none none.
 ;
 ; What it installs, for this Windows account only (no administrator rights):
 ;   %APPDATA%\Adobe\CEP\extensions\com.conformlabs.cueline   the panel and the engine (Adobe-signed, so Premiere Pro
@@ -23,6 +29,7 @@ CRCCheck off ; the released Setup is Authenticode-signed, which covers every byt
 !include WinVer.nsh
 !include FileFunc.nsh
 !include WordFunc.nsh
+!include "${MODELS_NSH}"
 
 !define PRODUCT "Cueline"
 !define PUBLISHER "Conform Labs"
@@ -31,6 +38,7 @@ CRCCheck off ; the released Setup is Authenticode-signed, which covers every byt
 !define UNINST_EXE "Uninstall Cueline.exe"
 !define CEP_EXT "$APPDATA\Adobe\CEP\extensions\com.conformlabs.cueline"
 !define DATA_DIR "$APPDATA\Cueline"
+!define MODELS_DIR "$APPDATA\Cueline\models"
 
 !ifdef SIGN_CMD
   !finalize '${SIGN_CMD} "%1"' = 0
@@ -85,6 +93,7 @@ VIAddVersionKey /LANG=1033 "Comments" "${HOMEPAGE}"
 
 !insertmacro CL_PAGE_MAINTENANCE
 !insertmacro CL_PAGE_WELCOME
+Page custom ModelsCreate ModelsLeave ; Choose speech models
 !insertmacro CL_PAGE_INSTFILES
 !insertmacro CL_PAGE_FINISH
 
@@ -98,6 +107,36 @@ VIAddVersionKey /LANG=1033 "Comments" "${HOMEPAGE}"
 !insertmacro MUI_LANGUAGE "English"
 
 Var Premiere   ; 1 when Premiere Pro was open during the install
+Var ModelsArg  ; /MODELS= on the command line ("" when not given)
+Var ModelsOk   ; models downloaded (for the finish page)
+Var ModelsBad  ; models that did not download
+
+!macro _MODEL_VARS N ID TITLE NOTE DEFAULT FILES HAVE
+  Var Model${N}.Box
+  Var Model${N}.Chosen
+  Var Model${N}.Have
+!macroend
+!insertmacro MODELS_FOR_EACH _MODEL_VARS
+
+; Which models start ticked: /MODELS= when given, else the defaults; never one already on this PC.
+!macro _MODEL_INIT N ID TITLE NOTE DEFAULT FILES HAVE
+  StrCpy $Model${N}.Have 0
+  ${If} ${FileExists} "${MODELS_DIR}\${HAVE}"
+    StrCpy $Model${N}.Have 1
+  ${EndIf}
+  StrCpy $Model${N}.Chosen ${DEFAULT}
+  ${If} $ModelsArg != ""
+    StrCpy $Model${N}.Chosen 0
+    ClearErrors
+    ${WordFind} ",$ModelsArg," ",${ID}," "E*" $1
+    ${IfNot} ${Errors}
+      StrCpy $Model${N}.Chosen 1
+    ${EndIf}
+  ${EndIf}
+  ${If} $Model${N}.Have == 1
+    StrCpy $Model${N}.Chosen 0
+  ${EndIf}
+!macroend
 Var UnAll      ; uninstaller: 1 with /ALL
 Var UnPremiere ; uninstaller: 1 when Premiere Pro was open
 
@@ -126,8 +165,133 @@ Function .onInit
     SetErrorLevel 3
     Abort
   ${EndIf}
+  ${GetParameters} $0
+  ClearErrors
+  ${GetOptions} $0 "/MODELS=" $ModelsArg
+  ${If} ${Errors}
+    StrCpy $ModelsArg ""
+  ${EndIf}
+  !insertmacro MODELS_FOR_EACH _MODEL_INIT
   !insertmacro CL_ONINIT
 FunctionEnd
+
+
+; ---------- Choose speech models ----------
+; The models in two columns (1 2 / 3 4 / 5); the speaker and silence models across the page under ALSO.
+!macro _MODEL_ROW N ID TITLE NOTE DEFAULT FILES HAVE
+  StrCpy $R1 "${TITLE}"
+  StrCpy $R2 "${NOTE}"
+  StrCpy $R3 1
+  ${If} $Model${N}.Have == 1
+    StrCpy $R2 "Already on this PC"
+    StrCpy $R3 0
+  ${EndIf}
+  GetFunctionAddress $R4 ToggleModel${N}
+  !if "${ID}" == "helpers"
+    IntOp $R0 $R0 + $R9 ; an odd one out above
+    StrCpy $R9 0
+    IntOp $R0 $R0 + 4
+    !insertmacro CL_SECTION_LABEL $R0u "ALSO"
+    IntOp $R0 $R0 + 10
+    StrCpy $R7 0
+    StrCpy $R8 300
+    Call cl.CheckRow
+    StrCpy $Model${N}.Box $R5
+    IntOp $R0 $R0 + $R6
+  !else
+    !define /redef /math _MODEL_COL ${N} % 2
+    !if ${_MODEL_COL} == 1
+      StrCpy $R7 0
+    !else
+      StrCpy $R7 154
+    !endif
+    StrCpy $R8 146
+    Call cl.CheckRow
+    StrCpy $Model${N}.Box $R5
+    !if ${_MODEL_COL} == 1
+      StrCpy $R9 $R6
+    !else
+      ${IfThen} $R6 > $R9 ${|} StrCpy $R9 $R6 ${|}
+      IntOp $R0 $R0 + $R9
+      StrCpy $R9 0
+    !endif
+  !endif
+  ${If} $Model${N}.Chosen == 1
+    ${NSD_Check} $R5
+  ${EndIf}
+!macroend
+
+!macro _MODEL_TOGGLE N ID TITLE NOTE DEFAULT FILES HAVE
+  Function ToggleModel${N}
+    Pop $0
+    ${NSD_GetState} $Model${N}.Box $0
+    ${If} $0 == ${BST_CHECKED}
+      ${NSD_Uncheck} $Model${N}.Box
+    ${Else}
+      ${NSD_Check} $Model${N}.Box
+    ${EndIf}
+  FunctionEnd
+!macroend
+!insertmacro MODELS_FOR_EACH _MODEL_TOGGLE
+
+Function ModelsCreate
+  !insertmacro MUI_HEADER_TEXT "Choose speech models" "Ticked models download now. Get others later in the panel's Models."
+  nsDialogs::Create 1018
+  Pop $0
+  ${If} $0 == error
+    Abort
+  ${EndIf}
+  SetCtlColors $0 "${CL_INK}" "${CL_PAPER}"
+  !insertmacro CL_SECTION_LABEL 0 "SPEECH MODELS"
+  StrCpy $R0 11
+  StrCpy $R9 0
+  !insertmacro MODELS_FOR_EACH _MODEL_ROW
+  !insertmacro CL_RULE $R0u
+  Call cl.AppPageShow
+  StrCpy $0 "&Install"
+  ${If} $cl.Installed == 1
+    StrCpy $0 $cl.ActionButton
+  ${EndIf}
+  Call cl.SetMainButton
+  nsDialogs::Show
+FunctionEnd
+
+!macro _MODEL_LEAVE N ID TITLE NOTE DEFAULT FILES HAVE
+  ${NSD_GetState} $Model${N}.Box $0
+  ${If} $0 == ${BST_CHECKED}
+    StrCpy $Model${N}.Chosen 1
+  ${Else}
+    StrCpy $Model${N}.Chosen 0
+  ${EndIf}
+!macroend
+Function ModelsLeave
+  !insertmacro MODELS_FOR_EACH _MODEL_LEAVE
+FunctionEnd
+
+; ---------- the downloads (the install section, after the panel) ----------
+!macro _MODEL_STEP_NAME N ID TITLE NOTE DEFAULT FILES HAVE
+  ${If} $Model${N}.Chosen == 1
+    Push "Downloading ${TITLE}"
+    Call cl.StepAdd
+  ${EndIf}
+!macroend
+
+!macro _MODEL_DOWNLOAD N ID TITLE NOTE DEFAULT FILES HAVE
+  ${If} $Model${N}.Chosen == 1
+    Call cl.StepStart
+    DetailPrint "Downloading ${TITLE} (${NOTE}) to ${MODELS_DIR}"
+    nsExec::ExecToLog '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\get-model.ps1" -Files "${FILES}" -Dir "${MODELS_DIR}"'
+    Pop $0
+    ${If} $0 == 0
+      StrCpy $ModelsOk "$ModelsOk, ${TITLE}"
+      Push "done"
+    ${Else}
+      StrCpy $ModelsBad "$ModelsBad, ${TITLE}"
+      Push "failed"
+    ${EndIf}
+    Call cl.StepEnd
+  ${EndIf}
+!macroend
 
 Function .onGUIEnd
   !insertmacro CL_ONGUIEND
@@ -138,6 +302,7 @@ Function ListSteps
   Call cl.StepAdd
   Push "Adding ${PRODUCT} to Apps"
   Call cl.StepAdd
+  !insertmacro MODELS_FOR_EACH _MODEL_STEP_NAME
 FunctionEnd
 
 Section "Install"
@@ -179,20 +344,39 @@ Section "Install"
   Push "done"
   Call cl.StepEnd
 
-  ; --- what the finish page shows ---
+  ; --- 3. the speech models ticked on Choose speech models ---
   InitPluginsDir
-  WriteINIStr "${CL_RESULTS_INI}" "summary" "count" "1"
+  File "/oname=$PLUGINSDIR\get-model.ps1" "${__FILEDIR__}\get-model.ps1"
+  StrCpy $ModelsOk ""
+  StrCpy $ModelsBad ""
+  !insertmacro MODELS_FOR_EACH _MODEL_DOWNLOAD
+
+  ; --- what the finish page shows ---
+  StrCpy $R0 1
   WriteINIStr "${CL_RESULTS_INI}" "summary.0" "kind" "done"
   WriteINIStr "${CL_RESULTS_INI}" "summary.0" "text" "Cueline ${VERSION} is in Premiere Pro"
+  ${If} $ModelsOk != ""
+    StrCpy $0 $ModelsOk "" 2 ; without the leading ", "
+    WriteINIStr "${CL_RESULTS_INI}" "summary.$R0" "kind" "done"
+    WriteINIStr "${CL_RESULTS_INI}" "summary.$R0" "text" "Downloaded $0"
+    IntOp $R0 $R0 + 1
+  ${EndIf}
+  ${If} $ModelsBad != ""
+    StrCpy $0 $ModelsBad "" 2
+    WriteINIStr "${CL_RESULTS_INI}" "summary.$R0" "kind" "failed"
+    WriteINIStr "${CL_RESULTS_INI}" "summary.$R0" "text" "Not downloaded: $0. Get it in the panel's Models."
+    IntOp $R0 $R0 + 1
+  ${EndIf}
+  WriteINIStr "${CL_RESULTS_INI}" "summary" "count" "$R0"
   ${If} $Premiere == 1
     WriteINIStr "${CL_RESULTS_INI}" "next" "count" "3"
     WriteINIStr "${CL_RESULTS_INI}" "next" "0" "Restart Premiere Pro (it is open)."
     WriteINIStr "${CL_RESULTS_INI}" "next" "1" "Open the panel: Window > Extensions > Cueline."
-    WriteINIStr "${CL_RESULTS_INI}" "next" "2" "The first time, it downloads a speech model (about 1.6 GB)."
+    WriteINIStr "${CL_RESULTS_INI}" "next" "2" "Pick a sequence and click Transcribe."
   ${Else}
     WriteINIStr "${CL_RESULTS_INI}" "next" "count" "2"
     WriteINIStr "${CL_RESULTS_INI}" "next" "0" "Open the panel in Premiere Pro: Window > Extensions > Cueline."
-    WriteINIStr "${CL_RESULTS_INI}" "next" "1" "The first time, it downloads a speech model (about 1.6 GB)."
+    WriteINIStr "${CL_RESULTS_INI}" "next" "1" "Pick a sequence and click Transcribe."
   ${EndIf}
   SetOutPath "$TEMP"
   SetAutoClose true
