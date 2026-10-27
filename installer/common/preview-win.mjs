@@ -61,14 +61,26 @@ img.p{position:absolute;image-rendering:pixelated}`;
   // the bitmaps have a 1 px margin of their background
   const glyph = (kind, bg, x, y) => `<img class="p" src="${bmp(`glyph-${kind}-${bg}-9.bmp`)}" style="left:${Math.round(x * UX) - 1}px;top:${Math.round(y * UY) - 1}px;width:11px;height:11px">`;
 
+  // The app's own wording (installer/app.json "preview"), or Surehand's when an app gives none.
+  const P = {
+    welcome: ["Surehand lets the AI apps you use, like Claude, ChatGPT and Cursor, work in After Effects on this computer. Every edit is listed. You can undo it in After Effects.",
+      "It installs for your Windows account only. No administrator rights needed.", "Next, you choose which AI apps to connect."],
+    steps: [["Installing Surehand MCP", "done"], ["Setting up After Effects", "done"], ["Connecting Claude Desktop", "done"], ["Connecting Claude Code", "done"], ["Connecting Cursor", "now"], ["Downloading cloudflared", "next"]],
+    now: "Connecting Cursor…",
+    results: [["done", "Connected Claude Desktop, Claude Code, Cursor"], ["skipped", "Not found: ChatGPT desktop / Codex"], ["done", "Adobe® After Effects® 2025, 2026"],
+      ["failed", "cloudflared not downloaded: no internet. Panel › Menu › ChatGPT on the web installs it later."]],
+    next: ["Restart After Effects (it is open).", "Restart Claude Desktop, Claude Code and Cursor.", "Ask one of them “What's in my project?” The Surehand panel (Window › Extensions › Surehand MCP) shows when it's connected."],
+    help: "github.com/ConformLabs/surehand-mcp",
+    ...(app.preview || {}),
+  };
   const pages = {};
   pages.welcome = page(
     sidebar +
       `<div class="a t1" style="${px(124, 20, 196, 16)}">Install ${esc(app.name)}</div>` +
       `<div class="a muted" style="${px(124, 38, 196, 10)}">${esc(app.for)}</div>` +
-      `<div class="a" style="${px(124, 56, 196, 34)}">Surehand lets the AI apps you use, like Claude, ChatGPT and Cursor, work in After Effects on this computer. Every edit is listed. You can undo it in After Effects.</div>` +
-      `<div class="a muted" style="${px(124, 94, 196, 18)}">It installs for your Windows account only. No administrator rights needed.</div>` +
-      `<div class="a muted" style="${px(124, 116, 196, 10)}">Next, you choose which AI apps to connect.</div>`,
+      `<div class="a" style="${px(124, 56, 196, 34)}">${esc(P.welcome[0])}</div>` +
+      `<div class="a muted" style="${px(124, 94, 196, 18)}">${esc(P.welcome[1] || "")}</div>` +
+      `<div class="a muted" style="${px(124, 116, 196, 10)}">${esc(P.welcome[2] || "")}</div>`,
     [["Back", 164, "off"], ["Next", 214, "main"], ["Cancel", 273]],
   );
   // surehand-mcp.nsi AppsRows: two columns, in the list's order across; a pair is as tall as its taller cell
@@ -91,7 +103,7 @@ img.p{position:absolute;image-rendering:pixelated}`;
     header("Choose AI apps", "Surehand connects the apps you tick. You can change this later in the panel.") + inner(0, 0, 300, 9, "AI APPS", "lab muted") + rows + rule(y),
     [["Back", 164], ["Install", 214, "main"], ["Cancel", 273]],
   );
-  const steps = [["Installing Surehand MCP", "done"], ["Setting up After Effects", "done"], ["Connecting Claude Desktop", "done"], ["Connecting Claude Code", "done"], ["Connecting Cursor", "now"], ["Downloading cloudflared", "next"]];
+  const steps = P.steps;
   let sy = 26, sbody = "";
   for (const [t, st] of steps) {
     sbody += rule(sy) + glyph(st === "done" ? "done" : st === "now" ? "skipped" : "waiting", "paper", 15, 44 + sy + 4) +
@@ -102,17 +114,12 @@ img.p{position:absolute;image-rendering:pixelated}`;
   sbody += rule(sy);
   pages.progress = page(
     header("Installing", "This takes about a minute.") +
-      inner(0, 0, 300, 12, "Connecting Cursor…", "mono") +
+      inner(0, 0, 300, 12, esc(P.now), "mono") +
       inner(0, 15, 300, 3, `<div style="height:100%;background:${COLORS.paperSunk}"><div style="width:62%;height:100%;background:${accent}"></div></div>`) +
       sbody + `<div class="btn" style="${px(15, 44 + sy + 6, 60, 14)}">Show details</div>`,
     [["Back", 164, "off"], ["Next", 214, "off"], ["Cancel", 273, "off"]],
   );
-  const results = [
-    ["done", `Connected Claude Desktop, Claude Code, Cursor`],
-    ["skipped", "Not found: ChatGPT desktop / Codex"],
-    ["done", "Adobe® After Effects® 2025, 2026"],
-    ["failed", "cloudflared not downloaded: no internet. Panel › Menu › ChatGPT on the web installs it later."],
-  ];
+  const results = P.results;
   // the results box as conformlabs.nsh builds it: the ink rule (1u), a 3u strip, rows (a 14u gutter with the glyph
   // centred, the text from 138u), a 3u strip; lines counted the same way (frame.mjs resultLines)
   let ry = 38 + 1 + 3, rbody = "";
@@ -122,7 +129,7 @@ img.p{position:absolute;image-rendering:pixelated}`;
     ry += h;
   }
   ry += 3;
-  const next = ["Restart After Effects (it is open).", "Restart Claude Desktop, Claude Code and Cursor.", "Ask one of them “What's in my project?” The Surehand panel (Window › Extensions › Surehand MCP) shows when it's connected."];
+  const next = P.next;
   let ny = ry + 8, nbody = "";
   next.forEach((t, i) => {
     const lines = Math.max(1, Math.ceil(t.length / 48));
@@ -133,7 +140,7 @@ img.p{position:absolute;image-rendering:pixelated}`;
     sidebar + `<div class="a t1" style="${px(124, 14, 196, 16)}">${esc(app.name)} is installed</div>` +
       `<div class="a" style="${px(124, 38, 196, 1)};background:${COLORS.ink}"></div>` +
       `<div class="a" style="${px(124, 39, 196, ry - 39)};background:${COLORS.paperSunk}"></div>` + rbody + nbody +
-      `<div class="a muted" style="${px(124, 177, 22, 9)}">Help:</div><div class="a" style="${px(145, 177, 150, 10)};text-decoration:underline;text-align:center">github.com/ConformLabs/surehand-mcp</div>`,
+      `<div class="a muted" style="${px(124, 177, 22, 9)}">Help:</div><div class="a" style="${px(145, 177, 150, 10)};text-decoration:underline;text-align:center">${esc(P.help)}</div>`,
     [["Finish", 273, "main"]],
   );
   const option = (y, on, title, note, noteH = 18) =>

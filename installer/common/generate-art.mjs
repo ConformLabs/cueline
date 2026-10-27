@@ -222,7 +222,9 @@ if (process.platform === "darwin") {
 
 // ---------- previews of the pages ----------
 if (preview) {
-  const version = JSON.parse(readFileSync(join(ROOT, "server", "package.json"), "utf8")).version;
+  // the app's version: server/package.json (Surehand) or package.json at the repo root (Cueline)
+  const pkgFile = existsSync(join(ROOT, "server", "package.json")) ? join(ROOT, "server", "package.json") : join(ROOT, "package.json");
+  const version = JSON.parse(readFileSync(pkgFile, "utf8")).version;
   const { winPages } = await import("./preview-win.mjs");
   for (const [name, html] of Object.entries(winPages({ app, version, art: winOut, fonts: FONT_CSS }))) {
     const img = screenshot(html.page, html.w, html.h, { scale: 2 });

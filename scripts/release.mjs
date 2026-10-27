@@ -48,7 +48,8 @@ for (const a of [...assets]) {
 }
 
 run("git", ["add", "-A"]);
-run("git", ["commit", "-m", `Cueline ${version}`]);
+// a commit only when stamping changed something (releasing the version already in package.json changes nothing)
+if (out("git", ["status", "--porcelain"])) run("git", ["commit", "-m", `Cueline ${version}`]);
 run("git", ["tag", "-a", `v${version}`, "-m", `Cueline ${version}`]);
 run("git", ["push", "--follow-tags"]);
 run("gh", ["release", "create", `v${version}`, ...assets, "--title", `Cueline ${version}`, "--notes-file", notes,

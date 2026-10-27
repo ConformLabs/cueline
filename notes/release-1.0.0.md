@@ -10,4 +10,4 @@
 ### Updating
 Download the installer below and run it, then restart Premiere Pro. Cueline tells you when a new version is out (Updates in its menu).
 
-Tested on: (filled in when the release is tested)
+Tested on Premiere Pro 2026 (26.5) on macOS 26 (Apple silicon; the engine also on Intel, through Rosetta). On Windows 11: the installer and the engine; the panel inside Premiere Pro on Windows is next.

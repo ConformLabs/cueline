@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # The caption engine's tests, the version stamped the same everywhere, and every script parses.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run check
+      - name: Scripts parse
+        run: for f in scripts/*.mjs installer/common/*.mjs extension/js/*.js; do node --check "$f" || exit 1; done
+      - name: Shell scripts
+        run: shellcheck -S warning scripts/*.sh installer/mac/pkg/scripts/preinstall

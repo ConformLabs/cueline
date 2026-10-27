@@ -1,12 +1,48 @@
 {
-  "$comment": "Cueline's part of the Conform Labs installer frame (installer/common): name, 'for ...' line, logo, accent. Paths are relative to the repo root. After changing the logo or accent: node installer/common/generate-art.mjs",
+  "$comment": "Cueline's part of the Conform Labs installer frame (installer/common): name, 'for ...' line, logo, accent. Paths are relative to the repo root. After changing the logo or accent: node installer/common/generate-art.mjs preview (optional): the wording the page previews show (generate-art.mjs --preview); the real pages use the .nsi and the Mac page bodies.",
   "name": "Cueline",
   "for": "for Adobe® Premiere Pro®",
-  "accent": { "dark": "#6EA8FF", "light": "#1F5BBF" },
-  "logo": { "dark": "brand/cueline-mark-reversed.svg", "light": "brand/cueline-mark.svg" },
+  "accent": {
+    "dark": "#6EA8FF",
+    "light": "#1F5BBF"
+  },
+  "logo": {
+    "dark": "brand/cueline-mark-reversed.svg",
+    "light": "brand/cueline-mark.svg"
+  },
   "tile": "brand/cueline-tile.svg",
   "out": {
     "windows": "installer/windows/nsis/art",
     "mac": "installer/mac/pkg/resources"
+  },
+  "preview": {
+    "welcome": [
+      "Cueline turns speech in your Premiere Pro sequence into captions on a caption track, with timing checked against the audio. Hebrew first, and 99 other languages.",
+      "It installs for your Windows account only. No administrator rights needed.",
+      "Nothing is uploaded: it runs on this computer."
+    ],
+    "steps": [
+      [
+        "Installing the Premiere Pro panel",
+        "done"
+      ],
+      [
+        "Adding Cueline to Apps",
+        "now"
+      ]
+    ],
+    "now": "Adding Cueline to Apps…",
+    "results": [
+      [
+        "done",
+        "Cueline 1.0.0 is in Premiere Pro"
+      ]
+    ],
+    "next": [
+      "Restart Premiere Pro (it is open).",
+      "Open the panel: Window > Extensions > Cueline.",
+      "The first time, it downloads a speech model (about 1.6 GB)."
+    ],
+    "help": "github.com/ConformLabs/cueline"
   }
 }

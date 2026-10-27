@@ -806,7 +806,7 @@
           .map(([t, u]) => `<button type="button" data-url="${esc(u)}"><span>${esc(t)}</span><span aria-hidden="true">›</span></button>`).join("")}</div>
         <div class="credits"><span class="label">Built on</span>${credits.map(([n, l]) => `<div class="kv"><span>${esc(n)}</span><span class="mono-s">${l}</span></div>`).join("")}</div>
         <div class="spacer"></div>
-        <div class="sfoot">Made by Ron Yitzhaki at Conform Labs. Everything runs on this computer; nothing is uploaded. Adobe and Premiere Pro are trademarks of Adobe; Cueline is not affiliated with Adobe.</div>
+        <div class="sfoot">Made by Ron Yitzhaki at Conform Labs · MIT licence. Everything runs on this computer; nothing is uploaded. Adobe and Premiere Pro are trademarks of Adobe; Cueline is not affiliated with Adobe.</div>
       </div>`;
     } else if (S.overlay === "update") {
       drawUpdate(el, head);
@@ -1647,6 +1647,13 @@
   S.update = Host.knownUpdate();
   Host.ping().then((r) => { if (r.ok) { S.hostVersion = r.app; renderFoot(); } });
   setTimeout(() => checkUpdate(false), 4000); // once a day at most; quiet when offline
+  // Browser preview only: ?demo=review runs the simulated transcription on load (README screenshots).
+  if (Host.kind === "browser" && /[?&]demo=review/.test(location.search)) setTimeout(async () => {
+    try { localStorage.setItem("cueline.tip.keys", "1"); } catch (e) {}
+    const t = document.querySelector('[data-track="2"]'); if (t) t.click();
+    await go();
+    if (S.cues[2]) select(S.cues[2].id);
+  }, 600);
   log(`Cueline ${VERSION} in ${Host.kind === "browser" ? "a browser (simulated Premiere Pro)" : "Premiere Pro"}`);
   render();
   refresh();
