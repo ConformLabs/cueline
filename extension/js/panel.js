@@ -8,7 +8,7 @@
 
   const $ = (s, el) => (el || document).querySelector(s);
   const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-  const VERSION = "1.0.2";
+  const VERSION = "1.0.3";
   const REPO_URL = "https://github.com/ConformLabs/cueline", WIKI_URL = REPO_URL + "/wiki", SITE_URL = "https://conformlabs.co/cueline/";
   const TILE = '<svg class="tile" width="28" height="28" viewBox="0 0 200 200" aria-hidden="true"><rect class="bg" width="200" height="200"></rect><g transform="translate(24 24) scale(0.76)"><path d="M58 44H164M36 82H92M36 118H92M58 156H164" fill="none" stroke="#14161A" stroke-width="24"></path><path d="M112 86h28v28h-28Z" fill="#14161A"></path></g></svg>';
   const MARK = '<svg width="56" height="56" viewBox="0 0 200 200" aria-hidden="true"><path d="M58 48H160M40 82H90M40 118H90M58 152H160" fill="none" stroke="var(--ink)" stroke-width="18"></path><path d="M112 88h24v24h-24Z" fill="none" stroke="var(--product-cueline)" stroke-width="6"></path></svg>';
