@@ -10,7 +10,7 @@
 | "The transcription engine is missing" | Run the installer again. |
 | "No model is downloaded yet" | **☰ › Models**, download one. |
 | A model download stops | Check the internet connection, then download it again in **☰ › Models**. |
-| Transcription is slow on Windows | Windows transcription runs on the CPU. Use **ivrit.ai large-v3-turbo** or **Whisper large-v3-turbo**, and keep **Skip silence** on. |
+| Transcription is slow on Windows | **☰ › Check Cueline** shows the engine: "Vulkan · <your graphics card>" is the GPU, "CPU" means the PC has no Vulkan driver (update the graphics driver). The first transcription on a PC is slower while the driver prepares the engine. Turbo models and **Skip silence** are fastest. |
 | **P** doesn't play | Premiere Pro starts playback only while it is the active app: click its timeline once, then press P again. |
 | Shortcuts don't work | Click in the Cueline panel first: Premiere Pro sends keys to the panel only while it has focus. |
 | Captions are on the wrong speaker | Click the tag › **Said by …**. See [Speakers](Speakers). |

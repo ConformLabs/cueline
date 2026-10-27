@@ -1,6 +1,6 @@
 # The Cueline panel
 
-**Window › Extensions › Cueline.** The panel works narrow (docked in a column) and wide: at 760 px and wider, review
+**Window › Extensions › Cueline Captions.** The panel works narrow (docked in a column) and wide: at 760 px and wider, review
 shows the list and the selected caption side by side, with a strip of all captions underneath.
 
 ## Main screen

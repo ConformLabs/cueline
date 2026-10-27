@@ -1,6 +1,6 @@
-# Cueline for Adobe® Premiere Pro®
+# Cueline Captions for Adobe® Premiere Pro®
 
-Cueline turns the speech in a Premiere Pro sequence into captions on a caption track, on your computer. Nothing is
+Cueline Captions turns the speech in a Premiere Pro sequence into captions on a caption track, on your computer. Nothing is
 uploaded. It is made for Hebrew first (with ivrit.ai's model) and works in 99 other languages.
 
 ```
@@ -11,7 +11,7 @@ sequence audio ──> whisper.cpp (words) ──> timing from the audio ──>
 ## Getting started
 
 1. [Install Cueline](Installing) and restart Premiere Pro.
-2. Open the panel: **Window › Extensions › Cueline**.
+2. Open the panel: **Window › Extensions › Cueline Captions**.
 3. The first time, download a speech model (about 1.6 GB). For Hebrew, **ivrit.ai large-v3-turbo**. After that,
    Cueline works offline.
 4. Open a sequence. Set In/Out to caption part of it, or leave them off for the whole sequence.
@@ -39,7 +39,7 @@ sequence audio ──> whisper.cpp (words) ──> timing from the audio ──>
 
 - Premiere Pro 2022 (22.0) or later.
 - macOS 12 or later (Apple silicon or Intel), or Windows 10/11 64-bit.
-- About 2 GB of disk for a model. On a Mac, transcription uses the GPU (Metal); on Windows it runs on the CPU.
+- About 2 GB of disk for a model. Transcription runs on the graphics card: Metal on a Mac, Vulkan on Windows (NVIDIA, AMD or Intel graphics; a PC without a Vulkan driver uses the CPU).
 
 ## Help
 

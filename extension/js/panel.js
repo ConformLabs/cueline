@@ -101,9 +101,9 @@
         ${S.job && S.job.running ? '<button class="btn" type="button" data-act="stop">Stop</button>' : ""}
         <button class="btn icon" type="button" data-act="menu" aria-label="Menu" aria-haspopup="menu">${ICON.menu}</button>`;
     } else if (S.screen === "working") {
-      h = `${TILE}<div class="who"><div class="name">Cueline</div>${status}</div><button class="btn" type="button" data-act="stop">Stop</button>`;
+      h = `${TILE}<div class="who"><div class="name">Cueline Captions</div>${status}</div><button class="btn" type="button" data-act="stop">Stop</button>`;
     } else {
-      h = `${TILE}<div class="who"><div class="name">Cueline</div>${status}</div>
+      h = `${TILE}<div class="who"><div class="name">Cueline Captions</div>${status}</div>
         <button class="btn icon" type="button" data-act="history" aria-label="History">${ICON.history}</button>
         <button class="btn icon" type="button" data-act="menu" aria-label="Menu" aria-haspopup="menu">${ICON.menu}</button>`;
     }
@@ -779,7 +779,7 @@
       const row = (act, label, sub, extra) => `<button class="mrow" type="button" ${act}><span class="mtext"><span class="mlabel">${esc(label)}</span>${sub ? `<span class="msub">${sub}</span>` : ""}</span><span class="chev" aria-hidden="true">${extra == null ? "›" : extra}</span></button>`;
       const group = (title, rows) => `<div class="mgroup"><div class="label">${esc(title)}</div>${rows.join("")}</div>`;
       const inReview = S.screen === "review";
-      el.innerHTML = head("Cueline") + `<div class="screen-body">
+      el.innerHTML = head("Cueline Captions") + `<div class="screen-body">
         ${inReview ? group("This transcription", [
           row('data-act="undo"', undoStack.length ? `Undo ${undoStack[undoStack.length - 1].label.toLowerCase()}` : "Undo", "U", ""),
           row('data-act="redo"', "Redo", "⇧U", ""),
@@ -801,12 +801,12 @@
       const LOGO = TILE.replace('class="tile" width="28" height="28"', 'class="tile" width="64" height="64"');
       const credits = [["whisper.cpp", "MIT"], ["ivrit.ai Whisper models", "Apache-2.0"], ["OpenAI Whisper models", "MIT"], ["sherpa-onnx", "Apache-2.0"], ["pyannote segmentation 3.0", "MIT"], ["3D-Speaker CAM++", "Apache-2.0"], ["Silero VAD", "MIT"], ["IBM Plex", "OFL"]];
       el.innerHTML = head("About and help") + `<div class="screen-body">
-        <div class="about">${LOGO}<div><div class="t">Cueline</div><div class="s">for Adobe® Premiere Pro® · version ${VERSION}</div></div></div>
-        <div class="links">${[["Getting started", WIKI_URL], ["The Cueline panel", WIKI_URL + "/The-Cueline-panel"], ["Troubleshooting", WIKI_URL + "/Troubleshooting"], ["Report a problem", REPO_URL + "/issues"], ["Cueline on conformlabs.co", SITE_URL]]
+        <div class="about">${LOGO}<div><div class="t">Cueline Captions</div><div class="s">for Adobe® Premiere Pro® · version ${VERSION}</div></div></div>
+        <div class="links">${[["Getting started", WIKI_URL], ["The Cueline panel", WIKI_URL + "/The-Cueline-panel"], ["Troubleshooting", WIKI_URL + "/Troubleshooting"], ["Report a problem", REPO_URL + "/issues"], ["Cueline Captions on conformlabs.co", SITE_URL]]
           .map(([t, u]) => `<button type="button" data-url="${esc(u)}"><span>${esc(t)}</span><span aria-hidden="true">›</span></button>`).join("")}</div>
         <div class="credits"><span class="label">Built on</span>${credits.map(([n, l]) => `<div class="kv"><span>${esc(n)}</span><span class="mono-s">${l}</span></div>`).join("")}</div>
         <div class="spacer"></div>
-        <div class="sfoot">Made by Ron Yitzhaki at Conform Labs · MIT licence. Everything runs on this computer; nothing is uploaded. Adobe and Premiere Pro are trademarks of Adobe; Cueline is not affiliated with Adobe.</div>
+        <div class="sfoot">Made by Ron Yitzhaki at Conform Labs · MIT licence. Everything runs on this computer; nothing is uploaded. Adobe and Premiere Pro are trademarks of Adobe; Cueline Captions is not affiliated with Adobe.</div>
       </div>`;
     } else if (S.overlay === "update") {
       drawUpdate(el, head);
@@ -890,7 +890,7 @@
     const st = Host.engine.engineStatus(Host.extRoot), sys = Host.sysInfo(), ping = await Host.ping();
     const sp = Host.engine.speakerStatus ? Host.engine.speakerStatus(Host.extRoot) : {};
     const lines = [
-      `Cueline ${VERSION} · ${new Date().toISOString()}`,
+      `Cueline Captions ${VERSION} · ${new Date().toISOString()}`,
       `Host: ${ping.ok ? `Premiere Pro ${ping.app} (build ${ping.build || "?"})` : "not answering: " + ping.error}`,
       `System: ${sys.os} · CEP Node ${sys.node}`,
       `Extension: ${tilde(sys.extRoot)}`, `Data: ${tilde(sys.dataDir)}`, `Models: ${tilde(sys.modelsDir)}`,
@@ -1654,7 +1654,7 @@
     await go();
     if (S.cues[2]) select(S.cues[2].id);
   }, 600);
-  log(`Cueline ${VERSION} in ${Host.kind === "browser" ? "a browser (simulated Premiere Pro)" : "Premiere Pro"}`);
+  log(`Cueline Captions ${VERSION} in ${Host.kind === "browser" ? "a browser (simulated Premiere Pro)" : "Premiere Pro"}`);
   render();
   refresh();
   if (Host.kind === "premiere") Host.ping().then((r) => log(r.ok ? `Premiere Pro ${r.app}` : r.error));

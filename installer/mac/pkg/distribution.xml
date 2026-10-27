@@ -3,7 +3,7 @@
      speech model from installer/models.mjs). Installation Type shows the choices directly (customize="always"):
      Cueline (required) and the models to download now; a model already on this Mac starts unticked and says so. -->
 <installer-gui-script minSpecVersion="2">
-    <title>Cueline</title>
+    <title>Cueline Captions</title>
     <welcome file="welcome.html" mime-type="text/html"/>
     <conclusion file="conclusion.html" mime-type="text/html"/>
     <background file="background-light.tiff" alignment="bottomleft" scaling="none"/>
@@ -17,7 +17,7 @@ function checkOS() {
     if (system.compareVersions(system.version.ProductVersion, '12.0') < 0) {
         my.result.type = 'Fatal';
         my.result.title = 'macOS 12 or later is required';
-        my.result.message = 'Cueline needs macOS Monterey 12 or later.';
+        my.result.message = 'Cueline Captions needs macOS Monterey 12 or later.';
         return false;
     }
     return true;

@@ -13,7 +13,7 @@ Both install for your user only. No administrator password or admin rights.
 
 1. Double-click `Cueline-<version>.pkg` and click through the installer.
 2. Restart Premiere Pro if it is open.
-3. **Window › Extensions › Cueline**.
+3. **Window › Extensions › Cueline Captions**.
 
 The package is signed and notarized by Apple. It installs the panel to
 `~/Library/Application Support/Adobe/CEP/extensions/com.conformlabs.cueline`.
@@ -22,7 +22,7 @@ The package is signed and notarized by Apple. It installs the panel to
 
 1. Double-click `Cueline-Setup-<version>.exe` and click through Setup.
 2. Restart Premiere Pro if it is open (Setup tells you when it is).
-3. **Window › Extensions › Cueline**.
+3. **Window › Extensions › Cueline Captions**.
 
 Setup is signed. It installs the panel to `%APPDATA%\Adobe\CEP\extensions\com.conformlabs.cueline` and adds
 Cueline to **Settings › Apps**, where you can uninstall it. Running Setup again offers **Update** or **Uninstall**.

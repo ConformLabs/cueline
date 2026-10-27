@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<ExtensionManifest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ExtensionBundleId="com.conformlabs.cueline" ExtensionBundleVersion="1.0.2" ExtensionBundleName="Cueline" Version="11.0">
+<ExtensionManifest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ExtensionBundleId="com.conformlabs.cueline" ExtensionBundleVersion="1.0.2" ExtensionBundleName="Cueline Captions" Version="11.0">
   <ExtensionList>
     <Extension Id="com.conformlabs.cueline.panel" Version="1.0.2"/>
   </ExtensionList>
@@ -24,7 +24,7 @@
         <Lifecycle><AutoVisible>true</AutoVisible></Lifecycle>
         <UI>
           <Type>Panel</Type>
-          <Menu>Cueline</Menu>
+          <Menu>Cueline Captions</Menu>
           <Geometry>
             <Size><Height>720</Height><Width>340</Width></Size>
             <MinSize><Height>420</Height><Width>280</Width></MinSize>

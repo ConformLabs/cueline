@@ -31,7 +31,7 @@ CRCCheck off ; the released Setup is Authenticode-signed, which covers every byt
 !include WordFunc.nsh
 !include "${MODELS_NSH}"
 
-!define PRODUCT "Cueline"
+!define PRODUCT "Cueline Captions"
 !define PUBLISHER "Conform Labs"
 !define HOMEPAGE "https://github.com/ConformLabs/cueline"
 !define UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cueline"
@@ -47,7 +47,7 @@ CRCCheck off ; the released Setup is Authenticode-signed, which covers every byt
 
 Name "${PRODUCT}"
 OutFile "${OUTFILE}"
-InstallDir "$LOCALAPPDATA\Programs\${PRODUCT}"
+InstallDir "$LOCALAPPDATA\Programs\Cueline" ; the folder and the key below keep 1.0's names, so an update finds what it replaces
 
 VIProductVersion "${VERSION4}"
 VIFileVersion "${VERSION4}"
@@ -354,7 +354,7 @@ Section "Install"
   ; --- what the finish page shows ---
   StrCpy $R0 1
   WriteINIStr "${CL_RESULTS_INI}" "summary.0" "kind" "done"
-  WriteINIStr "${CL_RESULTS_INI}" "summary.0" "text" "Cueline ${VERSION} is in Premiere Pro"
+  WriteINIStr "${CL_RESULTS_INI}" "summary.0" "text" "${PRODUCT} ${VERSION} is in Premiere Pro"
   ${If} $ModelsOk != ""
     StrCpy $0 $ModelsOk "" 2 ; without the leading ", "
     WriteINIStr "${CL_RESULTS_INI}" "summary.$R0" "kind" "done"
@@ -371,11 +371,11 @@ Section "Install"
   ${If} $Premiere == 1
     WriteINIStr "${CL_RESULTS_INI}" "next" "count" "3"
     WriteINIStr "${CL_RESULTS_INI}" "next" "0" "Restart Premiere Pro (it is open)."
-    WriteINIStr "${CL_RESULTS_INI}" "next" "1" "Open the panel: Window > Extensions > Cueline."
+    WriteINIStr "${CL_RESULTS_INI}" "next" "1" "Open the panel: Window > Extensions > Cueline Captions."
     WriteINIStr "${CL_RESULTS_INI}" "next" "2" "Pick a sequence and click Transcribe."
   ${Else}
     WriteINIStr "${CL_RESULTS_INI}" "next" "count" "2"
-    WriteINIStr "${CL_RESULTS_INI}" "next" "0" "Open the panel in Premiere Pro: Window > Extensions > Cueline."
+    WriteINIStr "${CL_RESULTS_INI}" "next" "0" "Open the panel in Premiere Pro: Window > Extensions > Cueline Captions."
     WriteINIStr "${CL_RESULTS_INI}" "next" "1" "Pick a sequence and click Transcribe."
   ${EndIf}
   SetOutPath "$TEMP"

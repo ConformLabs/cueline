@@ -180,7 +180,7 @@ for (const m of models) {
   rmSync(ex, { recursive: true, force: true });
 }
 const choiceXml = [
-  `    <choice id="cueline" title="Cueline" description="${xml("The Premiere Pro panel and its engine, for your Mac account only.")}" enabled="false" selected="true">`,
+  `    <choice id="cueline" title="Cueline Captions" description="${xml("The Premiere Pro panel and its engine, for your Mac account only.")}" enabled="false" selected="true">`,
   `        <pkg-ref id="${PKG_ID}"/>`, "    </choice>",
   ...models.flatMap((m) => {
     const files = `[${m.files.map((f) => `'${f.file}'`).join(",")}]`;

@@ -13,7 +13,7 @@
 
 [![CI](https://github.com/ConformLabs/cueline/actions/workflows/ci.yml/badge.svg)](https://github.com/ConformLabs/cueline/actions/workflows/ci.yml)
 
-**Cueline turns the speech in a Premiere Pro sequence into captions on a caption track, on your computer.**
+**Cueline Captions turns the speech in a Premiere Pro sequence into captions on a caption track, on your computer.**
 It is made for Hebrew first, with ivrit.ai's model, and works in 99 other languages. Every caption is timed against the
 audio, checked against your caption style, fixed where it breaks it, and ready to review with the waveform and
 playback in Premiere Pro. Speakers are told apart by voice. Nothing is uploaded.
@@ -35,7 +35,7 @@ playback in Premiere Pro. Speakers are told apart by voice. Nothing is uploaded.
 - **Help:** [the wiki](https://github.com/ConformLabs/cueline/wiki): installing, the panel, speakers, troubleshooting.
 
 Premiere Pro's scripting can add caption tracks but not change them, so updating the timeline after edits adds a new
-caption track. On Windows, transcription runs on the CPU; on a Mac, on the GPU (Metal).
+caption track. Transcription runs on the graphics card: Metal on a Mac, Vulkan on Windows (NVIDIA, AMD or Intel; the CPU without a Vulkan driver).
 
 ```
 sequence audio ──> whisper.cpp (words) ──> timing from the audio ──> style check and fixes ──> caption track
@@ -73,7 +73,7 @@ Open `extension/index.html` through any static server to preview the panel with 
 Mac installer and the Windows Setup, and publishes the GitHub release. See `scripts/release.mjs`.
 
 MIT licence (see `LICENSE`). Adobe and Premiere Pro are either registered trademarks or trademarks of Adobe in the
-United States and/or other countries; Cueline is not affiliated with or endorsed by Adobe.
+United States and/or other countries; Cueline Captions is not affiliated with or endorsed by Adobe.
 
 Built on whisper.cpp (MIT), ivrit.ai models (Apache-2.0), sherpa-onnx (Apache-2.0), pyannote segmentation (MIT),
 3D-Speaker CAM++ (Apache-2.0), Silero VAD (MIT) and IBM Plex (OFL). See `PRIVACY.md` for every network request.

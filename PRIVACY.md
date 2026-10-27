@@ -1,6 +1,6 @@
 # Privacy
 
-Cueline is made by Conform Labs. It has no accounts, no analytics and no telemetry. Your audio, transcripts and
+Cueline Captions is made by Conform Labs. It has no accounts, no analytics and no telemetry. Your audio, transcripts and
 captions stay on your computer: transcription and speaker detection run locally.
 
 Cueline goes online only for these, each from the Cueline panel:

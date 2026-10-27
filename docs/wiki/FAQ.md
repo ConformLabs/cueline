@@ -17,4 +17,4 @@ speaker can have their own.
 Yes, once the models are downloaded.
 
 **Mac or Windows?**
-Both. On a Mac, transcription uses the GPU; on Windows, the CPU.
+Both. Transcription runs on the graphics card: Metal on a Mac, Vulkan on Windows (the CPU when a PC has no Vulkan driver).
