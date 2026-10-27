@@ -104,25 +104,42 @@
       knownUpdate() { try { return JSON.parse(fs.readFileSync(this.updateCachePath(), "utf8")); } catch (e) { return null; } },
       checkUpdate(current, force) {
         const cached = this.knownUpdate();
-        if (!force && cached && cached.current === current && Date.now() - cached.checkedAt < 24 * 3600 * 1000) return Promise.resolve(cached);
+        if (!force && cached && cached.current === current && !cached.error && Date.now() - cached.checkedAt < 24 * 3600 * 1000) return Promise.resolve(cached);
         const https = nodeRequire("https");
-        return new Promise((resolve) => {
-          const req = https.get({ host: "api.github.com", path: `/repos/${REPO}/releases/latest`, headers: { "User-Agent": "Cueline/" + current, Accept: "application/vnd.github+json" }, timeout: 8000 }, (res) => {
+        // one GET: { status, headers, body }; never rejects (status 0 with an error when it can't connect)
+        const get = (host, p, accept) => new Promise((resolve) => {
+          const req = https.get({ host, path: p, headers: { "User-Agent": "Cueline/" + current, Accept: accept || "*/*" }, timeout: 8000 }, (res) => {
             let body = ""; res.setEncoding("utf8"); res.on("data", (d) => (body += d));
-            res.on("end", () => {
-              let out;
-              try {
-                if (res.statusCode !== 200) throw new Error(res.statusCode === 404 ? "No release published yet." : `GitHub answered ${res.statusCode}.`);
-                const j = JSON.parse(body), latest = String(j.tag_name || "").replace(/^v/, "");
-                out = { checkedAt: Date.now(), current, latest, url: j.html_url, notes: noteLines(j.body), updateAvailable: cmpVersions(latest, current) > 0 };
-                try { fs.writeFileSync(this.updateCachePath(), JSON.stringify(out)); } catch (e) {}
-              } catch (e) { out = { checkedAt: Date.now(), current, error: e.message }; }
-              resolve(out);
-            });
+            res.on("end", () => resolve({ status: res.statusCode, headers: res.headers, body }));
           });
           req.on("timeout", () => req.destroy(new Error("No answer from GitHub.")));
-          req.on("error", (e) => resolve({ checkedAt: Date.now(), current, error: "Couldn't reach GitHub: " + e.message }));
+          req.on("error", (e) => resolve({ status: 0, error: e.message }));
         });
+        const done = (latest, url, notes) => {
+          const out = { checkedAt: Date.now(), current, latest, url, notes, updateAvailable: cmpVersions(latest, current) > 0 };
+          try { fs.writeFileSync(this.updateCachePath(), JSON.stringify(out)); } catch (e) {}
+          return out;
+        };
+        // GitHub's API first (the release body as notes). It allows 60 requests an hour per network address without
+        // an account, so a busy office network can be refused (403/429): then the releases page, which isn't limited
+        // that way, redirects .../releases/latest to .../tag/v<version>, and the notes file comes from the repository.
+        // When both fail, the last known result stays, with the error beside it.
+        return (async () => {
+          const api = await get("api.github.com", `/repos/${REPO}/releases/latest`, "application/vnd.github+json");
+          if (api.status === 200) {
+            try { const j = JSON.parse(api.body); return done(String(j.tag_name || "").replace(/^v/, ""), j.html_url, noteLines(j.body)); } catch (e) {}
+          }
+          if (api.status === 404) return { checkedAt: Date.now(), current, error: "No release published yet." };
+          const page = await get("github.com", `/${REPO}/releases/latest`);
+          const tag = /\/releases\/tag\/v?([^/?#]+)/.exec((page.headers && page.headers.location) || "");
+          if (tag) {
+            const latest = decodeURIComponent(tag[1]);
+            const raw = await get("raw.githubusercontent.com", `/${REPO}/v${latest}/notes/release-${latest}.md`);
+            return done(latest, `https://github.com/${REPO}/releases/tag/v${latest}`, raw.status === 200 ? noteLines(raw.body) : []);
+          }
+          const why = api.status === 0 ? "Couldn't reach GitHub: " + (api.error || "no connection") : api.status === 403 || api.status === 429 ? "GitHub is limiting requests from this network right now. Cueline tries again later." : `GitHub answered ${api.status}.`;
+          return cached && cached.latest ? { ...cached, error: why, checkedAt: Date.now() } : { checkedAt: Date.now(), current, error: why };
+        })();
       },
       openUrl(url) {
         try { if (window.cep && cep.util && cep.util.openURLInDefaultBrowser) { cep.util.openURLInDefaultBrowser(url); return true; } } catch (e) {}

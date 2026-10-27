@@ -826,8 +826,8 @@
           ${(u.notes || []).length ? `<ul>${u.notes.slice(0, 5).map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}
           <button class="link under" type="button" data-url="${esc(u.url || REPO_URL + "/releases/latest")}">What’s new</button>
           <button class="btn main big" type="button" data-url="${esc(u.url || REPO_URL + "/releases/latest")}">Download</button>
-          <div class="note">Download the installer and run it, then close and reopen the Cueline panel.</div></div>`
-      : `<div class="upd current"><div class="upd-head"><span class="v">${checking ? "Checking…" : u && u.error ? "Couldn’t check" : "You’re up to date"}</span><span class="have">version ${VERSION}</span></div>
+          <div class="note">Download the installer and run it, then close and reopen the Cueline panel.</div>${u.error ? `<div class="note">${esc(u.error)}</div>` : ""}</div>`
+      : `<div class="upd current"><div class="upd-head"><span class="v">${checking ? "Checking…" : u && u.error && !u.latest ? "Couldn’t check" : "You’re up to date"}</span><span class="have">version ${VERSION}</span></div>
           ${!checking && u && u.error ? `<div class="note">${esc(u.error)}</div>` : ""}</div>`;
     const auto = S.updateAuto !== false;
     el.innerHTML = head("Updates", `<button class="btn small" type="button" data-act="updcheck" ${checking ? "disabled" : ""}>Check now</button>`) + `<div class="screen-body">${card}
