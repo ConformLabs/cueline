@@ -1,6 +1,6 @@
 # Installing
 
-Download the installer for your computer from [the latest release](https://github.com/ConformLabs/cueline/releases/latest).
+Download the installer for your computer from [conformlabs.co/cueline](https://conformlabs.co/cueline/) or [the latest release](https://github.com/ConformLabs/cueline/releases/latest).
 
 | Computer | File |
 |---|---|

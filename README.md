@@ -31,6 +31,7 @@ playback in Premiere Pro. Speakers are told apart by voice. Nothing is uploaded.
 - **Install:** signed and notarized `.pkg` for Mac, signed `Setup.exe` for Windows, from
   [Releases](https://github.com/ConformLabs/cueline/releases/latest). No administrator rights, no account. Free and open
   source (MIT).
+- **Website and downloads:** [conformlabs.co/cueline](https://conformlabs.co/cueline/).
 - **Help:** [the wiki](https://github.com/ConformLabs/cueline/wiki): installing, the panel, speakers, troubleshooting.
 
 Premiere Pro's scripting can add caption tracks but not change them, so updating the timeline after edits adds a new

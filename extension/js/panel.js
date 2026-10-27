@@ -9,7 +9,7 @@
   const $ = (s, el) => (el || document).querySelector(s);
   const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const VERSION = "1.0.0";
-  const REPO_URL = "https://github.com/ConformLabs/cueline", WIKI_URL = REPO_URL + "/wiki";
+  const REPO_URL = "https://github.com/ConformLabs/cueline", WIKI_URL = REPO_URL + "/wiki", SITE_URL = "https://conformlabs.co/cueline/";
   const TILE = '<svg class="tile" width="28" height="28" viewBox="0 0 200 200" aria-hidden="true"><rect class="bg" width="200" height="200"></rect><g transform="translate(24 24) scale(0.76)"><path d="M58 44H164M36 82H92M36 118H92M58 156H164" fill="none" stroke="#14161A" stroke-width="24"></path><path d="M112 86h28v28h-28Z" fill="#14161A"></path></g></svg>';
   const MARK = '<svg width="56" height="56" viewBox="0 0 200 200" aria-hidden="true"><path d="M58 48H160M40 82H90M40 118H90M58 152H160" fill="none" stroke="var(--ink)" stroke-width="18"></path><path d="M112 88h24v24h-24Z" fill="none" stroke="var(--product-cueline)" stroke-width="6"></path></svg>';
   const ICON = {
@@ -802,7 +802,7 @@
       const credits = [["whisper.cpp", "MIT"], ["ivrit.ai Whisper models", "Apache-2.0"], ["OpenAI Whisper models", "MIT"], ["sherpa-onnx", "Apache-2.0"], ["pyannote segmentation 3.0", "MIT"], ["3D-Speaker CAM++", "Apache-2.0"], ["Silero VAD", "MIT"], ["IBM Plex", "OFL"]];
       el.innerHTML = head("About and help") + `<div class="screen-body">
         <div class="about">${LOGO}<div><div class="t">Cueline</div><div class="s">for Adobe® Premiere Pro® · version ${VERSION}</div></div></div>
-        <div class="links">${[["Getting started", WIKI_URL], ["The Cueline panel", WIKI_URL + "/The-Cueline-panel"], ["Troubleshooting", WIKI_URL + "/Troubleshooting"], ["Report a problem", REPO_URL + "/issues"]]
+        <div class="links">${[["Getting started", WIKI_URL], ["The Cueline panel", WIKI_URL + "/The-Cueline-panel"], ["Troubleshooting", WIKI_URL + "/Troubleshooting"], ["Report a problem", REPO_URL + "/issues"], ["Cueline on conformlabs.co", SITE_URL]]
           .map(([t, u]) => `<button type="button" data-url="${esc(u)}"><span>${esc(t)}</span><span aria-hidden="true">›</span></button>`).join("")}</div>
         <div class="credits"><span class="label">Built on</span>${credits.map(([n, l]) => `<div class="kv"><span>${esc(n)}</span><span class="mono-s">${l}</span></div>`).join("")}</div>
         <div class="spacer"></div>
