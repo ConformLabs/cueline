@@ -6,7 +6,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const https = require("https");
-const { spawn } = require("child_process");
+const { spawn, spawnSync } = require("child_process");
 
 const IS_WIN = process.platform === "win32";
 
@@ -46,15 +46,43 @@ function modelsDir() { const d = path.join(dataDir(), "models"); fs.mkdirSync(d,
 // The bundled binary sits in <extension>/engine/<platform>/; a dev build can be named in CUELINE_WHISPER.
 function binaryPath(extRoot) {
   if (process.env.CUELINE_WHISPER && fs.existsSync(process.env.CUELINE_WHISPER)) return process.env.CUELINE_WHISPER;
-  const name = IS_WIN ? "whisper-cli.exe" : "whisper-cli";
-  const plat = IS_WIN ? "win-x64" : "mac"; // the Mac engine is universal: Apple Silicon and Intel
-  return path.join(extRoot, "engine", plat, name);
+  if (!IS_WIN) return path.join(extRoot, "engine", "mac", "whisper-cli"); // universal: Apple Silicon and Intel
+  // Windows: the Vulkan build on a PC whose graphics driver brings Vulkan (vulkan-1.dll), else the CPU build
+  const dir = path.join(extRoot, "engine", "win-x64"), gpu = path.join(dir, "whisper-cli.exe"), cpu = path.join(dir, "whisper-cli-cpu.exe");
+  return hasVulkan() && fs.existsSync(gpu) ? gpu : fs.existsSync(cpu) ? cpu : gpu;
+}
+/* Which GPU the Vulkan engine should use. whisper-cli takes device 0, and Vulkan often lists the graphics built into
+ * the processor first (on ron-pc: Intel graphics as 0, the RTX as 1). Asked once per engine build: whisper-cli with
+ * the model and no audio lists its devices while loading the model ("ggml_vulkan: N = name | uma: 0/1"), then stops.
+ * The first dedicated one (uma: 0) wins, else device 0. Kept in <data>/gpu.json. */
+function vulkanDevice(bin, modelPath) {
+  const key = (() => { try { const st = fs.statSync(bin); return `${st.size}-${Math.round(st.mtimeMs)}`; } catch (e) { return ""; } })();
+  const file = path.join(dataDir(), "gpu.json");
+  try { const c = JSON.parse(fs.readFileSync(file, "utf8")); if (c.key === key) return c; } catch (e) {}
+  // a tenth of a second of silence (16 kHz mono): whisper-cli wants a real file before it loads the model
+  const wav = path.join(os.tmpdir(), "cueline_gpu_probe.wav"), n = 1600, b = Buffer.alloc(44 + n * 2);
+  b.write("RIFF", 0); b.writeUInt32LE(36 + n * 2, 4); b.write("WAVEfmt ", 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22);
+  b.writeUInt32LE(16000, 24); b.writeUInt32LE(32000, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34); b.write("data", 36); b.writeUInt32LE(n * 2, 40);
+  try { fs.writeFileSync(wav, b); } catch (e) {}
+  const r = spawnSync(bin, ["-m", modelPath, "-f", wav], { encoding: "utf8", timeout: 120000, windowsHide: true });
+  try { fs.unlinkSync(wav); } catch (e) {}
+  const devices = [...String((r.stdout || "") + (r.stderr || "")).matchAll(/ggml_vulkan:\s+(\d+)\s+=\s+([^|]+?)\s*\|\s*uma:\s*(\d)/g)]
+    .map((m) => ({ index: +m[1], name: m[2].replace(/\s*\([^)]*\)\s*$/, "").trim(), integrated: m[3] === "1" }));
+  const pick = devices.find((d) => !d.integrated) || devices[0] || { index: 0, name: "" };
+  const out = { key, device: pick.index, name: pick.name, devices };
+  try { fs.writeFileSync(file, JSON.stringify(out)); } catch (e) {}
+  return out;
+}
+function knownGpuName() { try { return JSON.parse(fs.readFileSync(path.join(dataDir(), "gpu.json"), "utf8")).name || ""; } catch (e) { return ""; } }
+
+function hasVulkan() {
+  return IS_WIN && fs.existsSync(path.join(process.env.SystemRoot || "C:\\Windows", "System32", "vulkan-1.dll"));
 }
 
 function engineStatus(extRoot) {
   const bin = binaryPath(extRoot);
   const ok = fs.existsSync(bin);
-  return { ok, bin, gpu: IS_WIN ? "CPU" : "Metal", vad: fs.existsSync(path.join(modelsDir(), VAD_MODEL.file)) };
+  return { ok, bin, gpu: IS_WIN ? (/whisper-cli\.exe$/.test(bin) && hasVulkan() ? (knownGpuName() ? `Vulkan · ${knownGpuName()}` : "Vulkan") : "CPU") : "Metal", vad: fs.existsSync(path.join(modelsDir(), VAD_MODEL.file)) };
 }
 
 function listModels() {
@@ -282,6 +310,11 @@ function transcribe(opts, cb) {
     "-t", String(Math.max(2, Math.min(8, os.cpus().length - 2))),
   ];
   if (model.dtw) args.push("-dtw", model.dtw);
+  if (IS_WIN && /whisper-cli\.exe$/.test(bin)) {
+    const gpu = vulkanDevice(bin, model.path);
+    args.push("-dev", String(gpu.device));
+    cb.onLog && cb.onLog(`GPU: ${gpu.name || "device " + gpu.device}${gpu.devices && gpu.devices.length > 1 ? ` (of ${gpu.devices.map((d) => d.name).join(", ")})` : ""}`);
+  }
   if (opts.translate) args.push("-tr");
   if (opts.prompt) args.push("--prompt", opts.prompt);
   const vadPath = path.join(modelsDir(), VAD_MODEL.file);

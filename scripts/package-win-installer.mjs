@@ -34,7 +34,7 @@ const icon = join(ROOT, "brand", "Cueline.ico");
 // the Adobe signature is made over every file
 rmSync(BUILD, { recursive: true, force: true });
 const stage = stageExtension(join(BUILD, "stage"), "win");
-if (sign) for (const rel of ["engine/win-x64/whisper-cli.exe", "engine/win-x64/diarize/cueline-voiceprint.exe"]) run(process.execPath, [signScript, join(stage, rel)]);
+if (sign) for (const rel of ["engine/win-x64/whisper-cli.exe", "engine/win-x64/whisper-cli-cpu.exe", "engine/win-x64/diarize/cueline-voiceprint.exe"]) run(process.execPath, [signScript, join(stage, rel)]);
 zxpSign(stage);
 const files = listFiles(stage);
 const estimatedKb = Math.ceil(files.reduce((a, rel) => a + statSync(join(stage, rel)).size, 0) / 1024) + 100;
