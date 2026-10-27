@@ -1,6 +1,6 @@
 {
   "name": "cueline",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Cueline for Adobe Premiere Pro: captions from speech, on this computer. A Conform Labs product.",
   "scripts": {
