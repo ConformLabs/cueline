@@ -102,17 +102,20 @@ def ink(s, w, size, track=0.0):
 # 34 tall on a baseline at 55.5 (Space Grotesk 600, tracking -0.044); "for Adobe® ..." from x 114, 12 tall on a
 # baseline at 83.5 (Space Grotesk 600, tracking -0.033).
 LOCK_W, LOCK_H = 520, 104
+# The weights that look like Surehand's lockup image, measured by its ink (its brand notes say 600 and 500; the image
+# came out heavier): the name 640, the second word 520, the "for Adobe®…" line 650.
+NAME_W, SECOND_W, SUB_W = 640, 520, 650
 WORD_GAP = 16.5   # between the two words' ink, as between "Surehand" and "MCP"
 
 
 def name(fg, second, x, base):
     """'Cueline' (600) and 'Captions' (500, muted) with their ink starting at x: (svg, ink right, ink top)."""
     size = 34 / ink("Cueline", 600, 1, NAME_TRACK)[2]
-    l, r, t = ink("Cueline", 600, size, NAME_TRACK)
-    d1, _ = text_path("Cueline", 600, size, x - l, base, NAME_TRACK)
+    l, r, t = ink("Cueline", NAME_W, size, NAME_TRACK)
+    d1, _ = text_path("Cueline", NAME_W, size, x - l, base, NAME_TRACK)
     x2 = x + (r - l) + WORD_GAP
-    l2, r2, _ = ink("Captions", 500, size, NAME_TRACK)
-    d2, _ = text_path("Captions", 500, size, x2 - l2, base, NAME_TRACK)
+    l2, r2, _ = ink("Captions", SECOND_W, size, NAME_TRACK)
+    d2, _ = text_path("Captions", SECOND_W, size, x2 - l2, base, NAME_TRACK)
     return f'<path d="{d1}" fill="{fg}"/><path d="{d2}" fill="{second}"/>', x2 + (r2 - l2), t
 NAME_TRACK, SUB_TRACK = -0.044, -0.033
 
@@ -132,8 +135,8 @@ def lockup(fg, accent, muted, with_mark=True, sub=True, endorse=False, second=No
     if sub:
         line = "for Adobe® Premiere Pro®"
         ssize = 12 / ink("for Adobe® After Effects®", 600, 1, SUB_TRACK)[2]   # the same type size as Surehand's line
-        l, _, _ = ink(line, 600, ssize, SUB_TRACK)
-        d, _ = text_path(line, 600, ssize, 114 - l, 83.5, SUB_TRACK)
+        l, _, _ = ink(line, SUB_W, ssize, SUB_TRACK)
+        d, _ = text_path(line, SUB_W, ssize, 114 - l, 83.5, SUB_TRACK)
         body += f'<path d="{d}" fill="{muted}"/>'
     if endorse:   # Surehand has none: the endorsement line under it, the canvas taller by one line
         esize = 9
