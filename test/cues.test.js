@@ -216,4 +216,48 @@ t("speakers: unsure sentences are flagged; fixing or confirming clears the flag"
   const fixed = C.setSpeaker(cues, id, 1, 0, spec).find((c) => c.id === id);
   assert.ok(!C.checkCue(fixed, spec).some((x) => x.kind === "speaker"));
 });
+t("captions snap to a nearby cut", () => {
+  const c = [
+    { id: "a", text: "one two", start: 0.0, end: 1.88, words: W("one two", 0, 0.8) },
+    { id: "b", text: "three four", start: 2.2, end: 3.6, words: W("three four", 2.2, 0.6) },
+  ];
+  const out = C.snapToCuts(c, [2.0], spec);
+  assert.strictEqual(out[1].start, 2.0); assert.ok(out[1].cutIn);
+  assert.strictEqual(out[0].end, 2.0 - 2 / 25); assert.ok(out[0].cutOut);
+  assert.strictEqual(C.cutCount(out), 2);
+});
+t("a cut too far away, or one that would hide a word, is ignored", () => {
+  const c = [{ id: "a", text: "x y", start: 1.0, end: 2.0, words: [{ text: "x", start: 1.0, end: 1.15 }, { text: "y", start: 1.2, end: 2.0 }] }];
+  assert.strictEqual(C.snapToCuts(c, [1.3], spec)[0].start, 1.0); // would start after most of the first word
+  assert.strictEqual(C.snapToCuts(c, [5], spec)[0].start, 1.0);
+});
+t("word beats follow the word timings, edited text is shared out", () => {
+  const c = { text: "- hello there\n- friend", start: 1, end: 3, words: W("hello there friend", 1, 0.5).map((w, i) => ({ ...w, spk: i < 2 ? 0 : 1 })) };
+  const b = C.wordBeats(c);
+  assert.strictEqual(b.text, "hello there friend"); assert.deepStrictEqual(b.beats.map((x) => x.t), [0, 0.5, 1]); assert.strictEqual(b.beats[2].spk, 1);
+  const e = C.wordBeats({ ...c, text: "hi friend", edited: true });
+  assert.strictEqual(e.beats.length, 2); assert.strictEqual(e.beats[0].t, 0);
+});
+t("transcript turns group by speaker and pause", () => {
+  const cues = [
+    { text: "a b", start: 0, end: 1, words: W("a b", 0, 0.5).map((w) => ({ ...w, spk: 0 })) },
+    { text: "c d", start: 1.2, end: 2, words: W("c d", 1.2, 0.4).map((w) => ({ ...w, spk: 0 })) },
+    { text: "e", start: 2.2, end: 3, words: W("e", 2.2, 0.8).map((w) => ({ ...w, spk: 1 })) },
+    { text: "f", start: 10, end: 11, words: W("f", 10, 1).map((w) => ({ ...w, spk: 1 })) },
+  ];
+  const t2 = C.transcriptTurns(cues);
+  assert.deepStrictEqual(t2.map((x) => [x.spk, x.text]), [[0, "a b c d"], [1, "e"], [1, "f"]]);
+});
+t("every look sets only controls the template has, with valid values", () => {
+  const L = require("../extension/js/looks.js");
+  for (const l of L.LOOKS) {
+    for (const [n, v] of Object.entries(l.set)) {
+      assert.ok(L.CONTROLS[n], `${l.id}: unknown control ${n}`);
+      if (L.CONTROLS[n] === "menu") assert.ok(v >= 1 && v <= L.MENUS[n].length, `${l.id}: ${n}=${v}`);
+      if (L.CONTROLS[n] === "color") assert.ok(/^#[0-9A-F]{6}$/i.test(v), `${l.id}: ${n}=${v}`);
+    }
+    const h = L.forHost(L.lookValues(l.id));
+    assert.ok(h.every((x) => x.type !== "color" || x.value.length === 3));
+  }
+});
 console.log(ok, "passed");

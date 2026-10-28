@@ -59,6 +59,28 @@ function cl_info() {
   } catch (e) { return cl_err("Could not read the sequence: " + e); }
 }
 
+/* ---------- shot changes: where the picture cuts ----------
+ * The start and end of every footage clip on the video tracks, in sequence seconds. Graphics,
+ * titles and adjustment layers have no media file, so they are not cuts. */
+function cl_cuts() {
+  var seq = cl_seq(); if (!seq) return cl_err("No sequence is open.");
+  try {
+    var fps = CL_TICKS / parseInt(seq.timebase, 10), seen = {}, cuts = [];
+    var add = function (sec) { var f = Math.round(sec * fps); if (f > 0 && !seen[f]) { seen[f] = 1; cuts.push(f / fps); } };
+    for (var i = 0; i < seq.videoTracks.numTracks; i++) {
+      var tr = seq.videoTracks[i];
+      for (var k = 0; k < tr.clips.numItems; k++) {
+        var c = tr.clips[k], media = "";
+        try { media = c.projectItem ? c.projectItem.getMediaPath() : ""; } catch (e) {}
+        if (!media) continue;
+        add(c.start.seconds); add(c.end.seconds);
+      }
+    }
+    cuts.sort(function (a, b) { return a - b; });
+    return cl_ok({ cuts: cuts, fps: fps });
+  } catch (e) { return cl_err("Could not read the cuts: " + e); }
+}
+
 /* ---------- batch: every sequence in the project ---------- */
 function cl_listSequences() {
   try {
@@ -162,6 +184,139 @@ function cl_placeCaptions(srtPath, startSec) {
   } finally {
     if (bin) { try { bin.deleteBin(); } catch (e2) {} }
   }
+}
+
+/* ---------- animated captions: one graphic per caption ----------
+ * listJson: [{start, end, text, timing, speakers}] in sequence seconds; timing and speakers are the
+ * comma lists the template reads (see templates/build-animated-captions.jsx). lookJson: the look's
+ * controls [{name, type, value}] (js/looks.js). The graphics go on a new video track above the
+ * others, so nothing already in the edit is covered or replaced. */
+function cl_mgtParam(comp, name) {
+  try { var p = comp.properties.getParamForDisplayName(name); if (p) return p; } catch (e) {}
+  for (var i = 0; i < comp.properties.numItems; i++) if (comp.properties[i].displayName === name) return comp.properties[i];
+  return null;
+}
+// An After Effects text parameter holds JSON ({"textEditValue": …, font settings}); keep the rest.
+function cl_setMgtText(p, text) {
+  var v = p.getValue();
+  if (typeof v === "string" && v.charAt(0) === "{") {
+    var o = cl_parse(v); o.textEditValue = text; p.setValue(cl_str(o), true);
+  } else p.setValue(text, true);
+}
+function cl_setMgt(p, type, value) {
+  if (!p) return false;
+  if (type === "color") p.setColorValue(255, value[0], value[1], value[2], true);
+  else if (type === "menu") p.setValue(value - 1, true); // Premiere Pro counts menu items from 0
+  else p.setValue(value, true);
+  return true;
+}
+function cl_getMgt(p, type) {
+  if (type === "color") { var c = p.getColorValue(); return [c[1], c[2], c[3]]; }
+  if (type === "menu") return p.getValue() + 1;
+  return p.getValue();
+}
+// The template is 1920 × 1920 and sits centred in the frame at its own size. Captions go in the
+// lower part of a landscape frame and a little lower than the middle of a portrait one; frames
+// larger than HD scale the graphic up so the caption keeps its share of the picture.
+function cl_layoutFor(seq) {
+  var W = seq.frameSizeHorizontal, H = seq.frameSizeVertical, k = Math.max(1, Math.min(W, H) / 1080);
+  var y = H * (W >= H ? 0.8 : 0.7);
+  return { pos: [0.5, (960 + (y - H / 2) / k) / 1920], scale: k * 100 };
+}
+function cl_placeAnimated(mogrtPath, listJson, lookJson) {
+  var seq = cl_seq(); if (!seq) return cl_err("No sequence is open.");
+  var f = new File(mogrtPath);
+  if (!f.exists) return cl_err("The animated caption template is missing at " + mogrtPath + ". Reinstall Cueline.");
+  var list = cl_parse(listJson), look = cl_parse(lookJson || "[]"), placed = 0, track = -1, lay = cl_layoutFor(seq), missing = {};
+  try {
+    app.enableQE();
+    var before = seq.videoTracks.numTracks;
+    qe.project.getActiveSequence().addTracks(1, before, 0);
+    if (seq.videoTracks.numTracks !== before + 1) return cl_err("Premiere Pro did not add a video track for the captions.");
+    track = before;
+    for (var i = 0; i < list.length; i++) {
+      var x = list[i];
+      var clip = seq.importMGT(f.fsName, cl_ticks(x.start), track, 0);
+      if (!clip) throw new Error("Premiere Pro did not place the template (caption " + (i + 1) + ").");
+      clip.end = cl_time(x.end);
+      var comp = clip.getMGTComponent();
+      if (!comp) throw new Error("The template has no Essential Graphics properties.");
+      cl_setMgtText(cl_mgtParam(comp, "Caption"), x.text);
+      cl_setMgtText(cl_mgtParam(comp, "Word timing (set by Cueline)"), x.timing);
+      cl_setMgtText(cl_mgtParam(comp, "Word speakers (set by Cueline)"), x.speakers);
+      for (var k = 0; k < look.length; k++) if (!cl_setMgt(cl_mgtParam(comp, look[k].name), look[k].type, look[k].value)) missing[look[k].name] = 1;
+      cl_setMgt(cl_mgtParam(comp, "Position"), "point", lay.pos);
+      if (lay.scale !== 100) { try { clip.components[1].properties[1].setValue(lay.scale, true); } catch (e) {} }
+      placed++;
+    }
+    var miss = []; for (var m in missing) if (missing.hasOwnProperty(m)) miss.push(m);
+    return cl_ok({ placed: placed, track: track + 1, missing: miss });
+  } catch (e) {
+    return cl_err("Animated captions stopped after " + placed + " of " + list.length + ": " + (e.message || e));
+  }
+}
+
+/* Copy the look of the selected animated caption to every other one on its track: all controls in
+ * schemaJson ([{name, type}]) and the caption's font settings, never its words or timing. */
+function cl_selectedAnimated(seq) {
+  var sel = seq.getSelection();
+  for (var i = 0; i < sel.length; i++) {
+    var c = sel[i];
+    if (c.mediaType === "Video" && c.isMGT && c.isMGT() && /^Cueline Animated Captions/.test(c.name)) return c;
+  }
+  return null;
+}
+// The font the selected animated caption uses: {font: PostScript name, size}.
+function cl_selectedFont() {
+  var seq = cl_seq(); if (!seq) return cl_err("No sequence is open.");
+  var src = cl_selectedAnimated(seq);
+  if (!src) return cl_err("Select one animated caption on the timeline first: the one whose look you want everywhere.");
+  try {
+    var o = cl_parse(cl_mgtParam(src.getMGTComponent(), "Caption").getValue());
+    return cl_ok({ font: o.fontEditValue ? o.fontEditValue[0] : "", size: o.fontSizeEditValue ? o.fontSizeEditValue[0] : 0 });
+  } catch (e) { return cl_ok({ font: "", size: 0 }); }
+}
+function cl_copyLook(schemaJson, ratio) {
+  var seq = cl_seq(); if (!seq) return cl_err("No sequence is open.");
+  var schema = cl_parse(schemaJson), src = cl_selectedAnimated(seq), srcTrack = null;
+  if (!src) return cl_err("Select one animated caption on the timeline first: the one whose look you want everywhere.");
+  for (var t = 0; t < seq.videoTracks.numTracks && !srcTrack; t++) {
+    var tr = seq.videoTracks[t];
+    for (var k = 0; k < tr.clips.numItems; k++) if (tr.clips[k].nodeId === src.nodeId) { srcTrack = tr; break; }
+  }
+  if (!srcTrack) return cl_err("Could not find the selected caption's track.");
+  var from = src.getMGTComponent(), vals = [];
+  for (var s = 0; s < schema.length; s++) { var p = cl_mgtParam(from, schema[s].name); if (p) vals.push({ name: schema[s].name, type: schema[s].type, value: cl_getMgt(p, schema[s].type) }); }
+  var font = null, capFrom = cl_mgtParam(from, "Caption");
+  try { font = cl_parse(capFrom.getValue()); } catch (e) {}
+  // Premiere Pro applies a changed font only when it draws the caption, so the template's measuring
+  // (the box behind the spoken word) can't see it: write it after the speakers, "0,1|Font|size|ratio",
+  // ratio being how much wider the font is than the template's (the panel measures it).
+  var fontTag = "";
+  if (font && font.fontEditValue) fontTag = "|" + font.fontEditValue[0] + "|" + (font.fontSizeEditValue ? font.fontSizeEditValue[0] : "") + "|" + (ratio > 0 ? ratio : 1);
+  function tagFont(comp) {
+    var p = cl_mgtParam(comp, "Word speakers (set by Cueline)"); if (!p) return;
+    var v = p.getValue(), o = null;
+    try { o = cl_parse(v); } catch (e) {}
+    var cur = o ? o.textEditValue : String(v);
+    cl_setMgtText(p, String(cur).split("|")[0] + fontTag);
+  }
+  tagFont(from);
+  var n = 0;
+  for (var j = 0; j < srcTrack.clips.numItems; j++) {
+    var clip = srcTrack.clips[j];
+    if (clip.nodeId === src.nodeId || clip.name !== src.name) continue;
+    var comp = clip.getMGTComponent(); if (!comp) continue;
+    tagFont(comp);
+    for (var v = 0; v < vals.length; v++) cl_setMgt(cl_mgtParam(comp, vals[v].name), vals[v].type, vals[v].value);
+    if (font) {
+      var cap = cl_mgtParam(comp, "Caption"), mine = cl_parse(cap.getValue());
+      for (var key in font) if (font.hasOwnProperty(key) && key !== "textEditValue" && key !== "fontTextRunLength") mine[key] = font[key];
+      cap.setValue(cl_str(mine), true);
+    }
+    n++;
+  }
+  return cl_ok({ copied: n, controls: vals.length });
 }
 
 // Remove the "Cueline" bin older versions of Cueline filled with imported SRT files.

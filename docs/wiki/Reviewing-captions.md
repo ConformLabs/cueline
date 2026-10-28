@@ -21,6 +21,18 @@ The selected caption shows a waveform with the audio around it. Drag its in or o
 shaded so you don't overlap them. Click the waveform to move Premiere's playhead there. The ‹ › buttons nudge by one
 frame; ⇤ ⇥ set in or out to the playhead.
 
+### Snap to cuts
+
+A caption that starts or ends a few frames off a shot change flashes across it. With **Snap to cuts** on (More options,
+before you transcribe), captions within 12 frames of a cut move onto it when Cueline finishes: the in-point onto the
+cut, the out-point to the cut less the style's gap. It never hides a word, overlaps two captions or makes one shorter
+than half a second, and it is one undo step. The strip of all captions shows the cuts as thin lines.
+
+Cuts are the edit points of the footage on your video tracks; titles, graphics and adjustment layers don't count. After
+you change the edit, **More (…) › Snap to cuts now** reads them again.
+
+### Playback
+
 **P** plays the caption in Premiere Pro and stops at its end. **Follow** keeps the caption under the playhead selected
 and in the middle of the list while you play or scrub.
 
@@ -28,6 +40,14 @@ and in the middle of the list while you play or scrub.
 
 With fillers set to **Mark**, אה, אמ, um and uh are highlighted. Keep or remove them per caption, or all at once from
 the banner.
+
+## Exporting
+
+**Export** saves SRT, WebVTT, a plain transcript, a transcript with timecodes, or a **Transcript for producers**: a
+Word document with a paragraph per speaker turn, its timecode and the speaker's name, right to left for Hebrew and
+Arabic. It opens in Word, Pages and Google Docs, for paper edits and approvals.
+
+For animated captions on a video track, see [Animated captions](Animated-captions).
 
 ## Updating the timeline
 

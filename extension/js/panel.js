@@ -38,10 +38,11 @@
     preset: saved.preset || "broadcast",
     custom: saved.custom || { ...Cues.PRESETS.broadcast, name: "Custom" },
     glossary: saved.glossary || [{ from: "תל-אביב", to: "תל אביב" }],
-    opts: { vad: true, fillers: true, translate: false, rtlFix: true, autofix: true, speakers: true, dashes: true, speakerTracks: true, ...(saved.opts || {}) },
+    opts: { vad: true, fillers: true, translate: false, rtlFix: true, autofix: true, cuts: true, speakers: true, dashes: true, speakerTracks: true, ...(saved.opts || {}) },
     speakerMode: saved.speakerMode || (saved.opts && saved.opts.speakers === false ? "off" : "voice"), // off | voice | track
     speakerCount: saved.speakerCount || 0, // 0 = auto detect
     updateAuto: saved.updateAuto !== false, update: null,
+    look: saved.look || "clean",
     fillerMode: saved.fillerMode || (saved.opts && saved.opts.fillers === false ? "keep" : "mark"),
     tracks: null,
     job: null,
@@ -52,7 +53,7 @@
     log: [],
   };
   function persist() {
-    try { localStorage.setItem("cueline.settings", JSON.stringify({ lang: S.lang, model: S.model, preset: S.preset, custom: S.custom, glossary: S.glossary, opts: S.opts, follow: S.follow, fillerMode: S.fillerMode, speakerMode: S.speakerMode, speakerCount: S.speakerCount, updateAuto: S.updateAuto })); } catch (e) {}
+    try { localStorage.setItem("cueline.settings", JSON.stringify({ lang: S.lang, model: S.model, preset: S.preset, custom: S.custom, glossary: S.glossary, opts: S.opts, follow: S.follow, fillerMode: S.fillerMode, speakerMode: S.speakerMode, speakerCount: S.speakerCount, updateAuto: S.updateAuto, look: S.look })); } catch (e) {}
   }
   function spec() {
     const base = S.preset === "custom" ? S.custom : Cues.PRESETS[S.preset];
@@ -168,6 +169,7 @@
       <section class="sec" style="gap:2px" ${S.showMore ? "" : "hidden"}>
         <div class="field" style="margin-bottom:6px"><span class="label">Glossary</span><div class="row between"><span class="mono-s">${plural(S.glossary.filter((g) => g.from).length, "term")}</span><button class="link" type="button" data-act="style">Style and glossary</button></div></div>
         ${opt("autofix", "Fix automatically", "Splits, merges and extends captions that break the style, when Whisper finishes. You can undo it.")}
+        ${opt("cuts", "Snap to cuts", "Captions that start or end within 12 frames of a shot change move onto the cut, so none flash across it.")}
         ${opt("vad", "Skip silence", "Faster, and no invented words in quiet parts.")}
         <div class="field" style="margin:6px 0 4px"><span class="label">Speakers</span>
           <div class="row"><div class="seg grow" role="radiogroup" aria-label="Speakers">
@@ -502,7 +504,8 @@
     const span = tlSpan();
     const spkOf = (c) => { const w = (c.words || []).find((x) => x.spk != null); return S.speakers && w ? ` sp${w.spk % 4}` : ""; };
     const blocks = S.cues.map((c) => `<button type="button" class="tb${spkOf(c)}${(report.get(c.id) || []).length ? " iss" : ""}${S.selected === c.id ? " sel" : ""}${S.nowId === c.id ? " now" : ""}" data-tl="${c.id}" style="left:${((c.start / span) * 100).toFixed(3)}%;width:${(((c.end - c.start) / span) * 100).toFixed(3)}%" title="${esc(tc(c.start + S.offset) + "  " + c.text.replace(/\n/g, " "))}" aria-label="${esc(tc(c.start + S.offset))}"></button>`).join("");
-    return `<div class="tline" data-tline aria-label="All captions over time">${blocks}<div class="tph" hidden></div></div>`;
+    const cuts = (S.cuts || []).filter((k) => k > 0 && k < span).map((k) => `<i class="tcut" style="left:${((k / span) * 100).toFixed(3)}%"></i>`).join("");
+    return `<div class="tline" data-tline aria-label="All captions over time">${cuts}${blocks}<div class="tph" hidden></div></div>`;
   }
   function moveTlinePlayhead() {
     const line = $(".tline .tph"); if (!line) return;
@@ -812,6 +815,18 @@
       drawUpdate(el, head);
     } else if (S.overlay === "test") {
       drawChecks(el, head);
+    } else if (S.overlay === "animated") {
+      const rtl = isRtlLang(), tooOld = S.hostVersion && parseInt(S.hostVersion, 10) < 25; // templates made in After Effects 2025
+      el.innerHTML = head("Animated captions") + `<div class="screen-body">
+        <div class="intro">One graphic per caption on a new video track, the spoken word lit in its speaker's colour. Pick a look; every part of it can still be changed in Premiere Pro's Essential Graphics panel.</div>
+        <div class="looks" role="radiogroup" aria-label="Look">${Looks.LOOKS.map((l) => `<button type="button" class="look" role="radio" data-look="${l.id}" aria-checked="${S.look === l.id}">
+          ${lookPreview(Looks.lookValues(l.id), rtl)}<span class="lt">${esc(l.name)}</span><span class="ls">${esc(l.note)}</span></button>`).join("")}</div>
+        <div class="go" style="padding:12px"><button class="btn main big" type="button" data-act="animgo" ${S.cues.length && !animating && !tooOld ? "" : "disabled"}>${animating ? "Placing…" : `Place ${plural(S.cues.length, "animated caption")}`}</button>
+          <div class="hint">${tooOld ? `Animated captions need Premiere Pro 2025 or later; this is ${esc(hostLabel())}.` : `${rtl ? "Right to left" : "Left to right"} · positioned for this sequence's frame · on a new track, nothing covered`}</div></div>
+        <div class="copylook"><span class="label">Same look everywhere</span>
+          <span class="hintline">Style one caption in Essential Graphics, select it on the timeline, then copy its look and font to every caption on its track.</span>
+          <button class="btn" type="button" data-act="copylook">Copy the selected caption's look to all</button></div>
+      </div>`;
     } else if (S.overlay === "log") {
       el.innerHTML = head("Log", '<button class="btn small" type="button" data-act="copylog">Copy</button>') + `<div class="screen-body"><pre class="report" style="max-height:none;flex:1 1 auto;margin:12px">${esc(S.log.join("\n") || "Nothing yet.")}</pre></div>`;
     }
@@ -1205,6 +1220,7 @@
       const el = (Date.now() - S.job.startedAt) / 1000;
       log(`${res.stopped ? "Stopped" : "Transcribed"} ${dur(exp.duration)} in ${dur(el)} · ${(exp.duration / el).toFixed(1)}× real time · ${res.words.length} words · ${S.cues.length} captions`);
       const fixedN = S.opts.autofix && S.cues.length ? autoFix(null, true) : 0;
+      if (S.opts.cuts && S.cues.length) await snapCuts(true);
       saveHistory();
       if (opts.batch) {
         if (!res.stopped && S.cues.length) await place();
@@ -1342,6 +1358,21 @@
     }
   }
 
+  /* ---------- shot changes ----------
+   * Reads where the picture cuts now (the edit may have changed since the last time) and moves
+   * caption edges onto the cuts near them. One undo step. Returns how many captions moved. */
+  async function snapCuts(quiet) {
+    const r = await Host.cuts();
+    if (!r.ok) { log("Cuts: " + r.error); if (!quiet) toast(r.error, true); return 0; }
+    S.cuts = r.cuts.map((k) => k - S.offset);
+    const before = S.cues, next = Cues.snapToCuts(before, S.cuts, spec());
+    const moved = next.filter((c, k) => c.start !== before[k].start || c.end !== before[k].end).length;
+    log(`Cuts: ${r.cuts.length} in the sequence, ${moved} captions moved onto them`);
+    if (moved) { remember("Snap to cuts"); S.cues = next; markDirty(); }
+    if (!quiet) { toast(moved ? `Moved ${plural(moved, "caption")} onto the cuts. U undoes it.` : r.cuts.length ? "Every caption already clears the cuts." : "No cuts in this sequence."); render(); }
+    return moved;
+  }
+
   /* ---------- place and export ---------- */
   function srt(list) { return Cues.toSRT(list || S.cues, { offset: S.offset, rtlFix: isRtlLang() && S.opts.rtlFix }); }
 
@@ -1375,6 +1406,78 @@
     } finally { placing = false; }
   }
 
+  // A small picture of a look: three words, the second one being spoken.
+  function lookPreview(v, rtl) {
+    const k = 0.18, words = rtl ? ["ככה", "נראות", "הכתוביות"] : ["This", "is", "how"];
+    const up = v["Text case"] === 2 ? "text-transform:uppercase;" : "";
+    const ow = v["Outline width"] * k, oc = v["Outline colour"];
+    const outline = ow > 0 ? [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7, 0.7], [-0.7, 0.7], [0.7, -0.7], [-0.7, -0.7]].map(([x, y]) => `${(x * ow).toFixed(1)}px ${(y * ow).toFixed(1)}px 0 ${oc}`) : [];
+    const sh = v["Shadow"] ? [`${(v["Shadow · Distance"] * k * 0.7).toFixed(1)}px ${(v["Shadow · Distance"] * k * 0.7).toFixed(1)}px ${(v["Shadow · Softness"] * k).toFixed(1)}px ${v["Shadow · Colour"]}${Math.round(v["Shadow · Opacity"] * 2.55).toString(16).padStart(2, "0")}`] : [];
+    const ts = outline.concat(sh).join(",") || "none";
+    const spk = v["Spoken word · Speaker 1"], style = v["Spoken word · Style"];
+    const said = v["Said words"] === 2 ? spk : v["Said words"] === 3 ? v["Said words · Colour"] : v["Text colour"];
+    const spoken = style === 2 ? `color:${v["Spoken word · Text on box"]};background:${spk};` : style === 3 ? `color:${spk};background:${v["Spoken word · Box colour"]};` : `color:${spk};`;
+    const pad = style === 1 ? "" : `padding:0 ${Math.max(2, v["Spoken word · Box padding"] * k).toFixed(1)}px;border-radius:${(v["Spoken word · Box roundness"] * k).toFixed(1)}px;text-shadow:none;`;
+    const bg = v["Background"] ? `background:${v["Background · Colour"]}${Math.round(v["Background · Opacity"] * 2.55).toString(16).padStart(2, "0")};border-radius:${(v["Background · Roundness"] * k).toFixed(1)}px;padding:2px ${(v["Background · Padding"] * k).toFixed(1)}px;` : "";
+    const tilt = v["Random tilt"] ? `transform:rotate(${-v["Random tilt"] * 0.6}deg);` : "";
+    return `<span class="lprev" aria-hidden="true"><span class="lcap" dir="${rtl ? "rtl" : "ltr"}" style="color:${v["Text colour"]};${up}letter-spacing:${(v["Letter spacing"] * 3 / 1000).toFixed(3)}em;text-shadow:${ts};${bg}${tilt}font-size:${(15 * v["Size"] / 50).toFixed(1)}px">` +
+      `<span style="color:${said}">${words[0]}</span> <span style="${spoken}${pad}display:inline-block;margin:0 ${(v["Spoken word · Grow"] / 250).toFixed(2)}em;transform:scale(${1 + v["Spoken word · Grow"] / 100})">${words[1]}</span> <span style="opacity:${Math.max(0.12, v["Upcoming words · Opacity"] / 100)}">${words[2]}</span></span></span>`;
+  }
+
+  /* How much wider a font sets text than the template's Arial Bold, measured here in the panel (fonts
+   * are found by their PostScript name, which is what Premiere Pro stores). Premiere Pro draws a
+   * changed font itself, so the template scales its box behind the spoken word by this. */
+  async function fontRatio(ps, rtl) {
+    if (!ps || ps === "Arial-BoldMT" || typeof FontFace === "undefined") return 1;
+    try {
+      const fam = "cl-m-" + ps.replace(/[^A-Za-z0-9]/g, "");
+      const face = new FontFace(fam, `local("${ps.replace(/"/g, "")}")`), base = new FontFace("cl-base", 'local("Arial-BoldMT"), local("Arial Bold")');
+      await Promise.all([face.load(), base.load()]);
+      document.fonts.add(face); document.fonts.add(base);
+      const ctx = document.createElement("canvas").getContext("2d");
+      const sample = rtl ? "הרגשתי פחד וחוסר אונים, במצב שאין אף אחד ששומר עליך" : "The quick brown fox jumps over the lazy dog, 2026";
+      ctx.font = `100px "${fam}"`; const a = ctx.measureText(sample).width;
+      ctx.font = '100px "cl-base"'; const b = ctx.measureText(sample).width;
+      return a > 0 && b > 0 ? Math.round((a / b) * 1000) / 1000 : 1;
+    } catch (e) { log(`Font ${ps}: could not measure it here (${e.message || e}); the word box uses the template font's widths`); return 1; }
+  }
+
+  async function copyLook() {
+    const schema = Object.keys(Looks.CONTROLS).filter((n) => n !== "Position").map((n) => ({ name: n, type: Looks.CONTROLS[n] }));
+    const f = await Host.selectedFont();
+    if (!f.ok) return toast(f.error, true);
+    const ratio = await fontRatio(f.font, isRtlLang());
+    if (f.font) log(`Copy look: font ${f.font} ${f.size || ""}, ${ratio}× as wide as the template font`);
+    const r = await Host.copyLook(schema, ratio);
+    log(r.ok ? `Copied a look to ${r.copied} animated captions (${r.controls} controls and the font)` : "Copy look: " + r.error);
+    toast(r.ok ? (r.copied ? `Copied the look to ${plural(r.copied, "caption")}.` : "No other animated captions on that track.") : r.error, !r.ok);
+  }
+
+  /* Animated captions: one graphic per caption on a new video track, the spoken word lit in its
+   * speaker's colour. Looks, colours, font and position are set in Premiere Pro's Essential Graphics. */
+  let animating = false;
+  async function placeAnimated() {
+    if (animating || !S.cues.length) return;
+    animating = true;
+    try {
+      const list = S.cues.map((c) => {
+        const b = Cues.wordBeats(c);
+        return {
+          start: c.start + S.offset, end: c.end + S.offset,
+          text: c.text.replace(/^- /gm, "").replace(/\n/g, "\r"),
+          timing: b.beats.map((x) => x.t.toFixed(2)).join(","),
+          speakers: b.beats.map((x) => (S.speakers && x.spk != null ? x.spk : 0)).join(","),
+        };
+      });
+      if (S.overlay === "animated") renderScreen();
+      const look = Looks.forHost(Looks.lookValues(S.look));
+      const t0 = Date.now(), r = await Host.placeAnimated(isRtlLang(), list, look);
+      log(r.ok ? `Animated captions (${S.look}): ${r.placed} graphics on V${r.track} in ${((Date.now() - t0) / 1000).toFixed(1)} s${r.missing && r.missing.length ? "; the template has no " + r.missing.join(", ") : ""}` : "Animated captions: " + r.error);
+      if (!r.ok) return toast(r.error, true);
+      toast(`Placed ${plural(r.placed, "animated caption")} on V${r.track}. Change any part in Essential Graphics.`);
+    } finally { animating = false; if (S.overlay === "animated") renderScreen(); }
+  }
+
   function exportAs(kind) {
     const base = ((S.info && S.info.name) || "captions").replace(/[\/\\:*?"<>|]/g, "-");
     const o = { offset: S.offset, fps: (S.info && S.info.fps) || 25, rtlFix: isRtlLang() && S.opts.rtlFix };
@@ -1383,10 +1486,27 @@
       vtt: [base + ".vtt", () => Cues.toVTT(S.cues, o)],
       tc: [base + " transcript.txt", () => Cues.toTranscript(S.cues, { ...o, speakers: S.speakers })],
       txt: [base + ".txt", () => Cues.toPlain(S.cues)],
+      docx: [base + " transcript.docx", () => producerDoc(o)],
     }[kind];
     if (!out) return;
     const p = Host.saveFile(out[0], out[1]());
     if (p) { log("Saved " + p); toast("Saved " + p.split(/[\\/]/).pop() + "."); }
+  }
+
+  // A Word transcript for producers: paragraphs by speaker with timecodes, right to left for Hebrew.
+  function producerDoc(o) {
+    const turns = Cues.transcriptTurns(S.cues);
+    const names = S.speakers, who = (k) => (names && k != null ? names[k] || `Speaker ${k + 1}` : "");
+    const span = S.cues.length ? S.cues[S.cues.length - 1].end - S.cues[0].start : 0;
+    const meta = [`${tc(S.cues.length ? S.cues[0].start + S.offset : 0)} – ${tc(S.cues.length ? S.cues[S.cues.length - 1].end + S.offset : 0)}`, dur(span)];
+    if (names) meta.push(plural(names.length, "speaker"));
+    meta.push(langName(S.opts.translate ? "en" : spokenLang()));
+    meta.push(new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }));
+    return Docx.transcriptDocx({
+      title: (S.info && S.info.name) || "Transcript", meta, rtl: isRtlLang(),
+      turns: turns.map((t) => ({ tc: Cues.timecode(t.start + o.offset, o.fps), speaker: who(t.spk), text: t.text })),
+      footer: "Transcribed on this computer with Cueline Captions",
+    });
   }
 
   /* ---------- downloads ---------- */
@@ -1422,15 +1542,18 @@
     if (d.menu) {
       closeMenu();
       ({ undo, redo, keys: () => openScreen("keys"), style: () => openScreen("style"), models: () => openScreen("models"), history: () => openScreen("history"), log: () => openScreen("log"), batch: () => openBatch(),
-         srt: () => exportAs("srt"), vtt: () => exportAs("vtt"), tc: () => exportAs("tc"), txt: () => exportAs("txt"),
+         srt: () => exportAs("srt"), vtt: () => exportAs("vtt"), tc: () => exportAs("tc"), txt: () => exportAs("txt"), docx: () => exportAs("docx"), snapcuts: () => snapCuts(false), animated: () => openScreen("animated"),
          copy: () => { Host.copy(Cues.toPlain(S.cues)); toast("Transcript copied."); },
          markers: async () => { const r = await Host.addMarkers(S.cues.map((c) => ({ start: c.start + S.offset, end: c.end + S.offset, text: c.text }))); r.ok ? toast(`Added ${r.added} markers.`) : toast(r.error, true); },
       }[d.menu] || (() => {}))();
       return;
     }
+    if (d.look) { S.look = d.look; persist(); return renderScreen(); }
+    if (d.act === "animgo") return placeAnimated();
+    if (d.act === "copylook") return copyLook();
     if (d.act === "menu") return openScreen("menu");
-    if (d.act === "export") return openMenu(t, [["srt", "SRT file", ".srt"], ["vtt", "WebVTT file", ".vtt"], ["tc", "Transcript with timecodes", ".txt"], ["txt", "Plain transcript", ".txt"]]);
-    if (d.act === "more") return openMenu(t, [["markers", "Markers, one per caption", String(S.cues.length)], ["copy", "Copy transcript"]]);
+    if (d.act === "export") return openMenu(t, [["srt", "SRT file", ".srt"], ["vtt", "WebVTT file", ".vtt"], ["docx", "Transcript for producers", ".docx"], ["tc", "Transcript with timecodes", ".txt"], ["txt", "Plain transcript", ".txt"]]);
+    if (d.act === "more") return openMenu(t, [["animated", "Animated captions on a video track", String(S.cues.length)], ["snapcuts", "Snap to cuts now", S.cuts ? String(S.cuts.length) : ""], ["markers", "Markers, one per caption", String(S.cues.length)], ["copy", "Copy transcript"]]);
     if (d.act === "go") return go();
     if (d.act === "more-opts") { S.showMore = !S.showMore; return render(); }
     if (d.act === "stop") return stop();

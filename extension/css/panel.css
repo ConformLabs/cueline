@@ -379,6 +379,7 @@ button:disabled { cursor: default; }
 .tline .tb.iss::after { content: ""; position: absolute; left: 0; right: 0; top: -5px; height: 3px; border-radius: 1px; background: var(--changed); }
 .tline .tb.now { box-shadow: 0 0 0 1px var(--ink); }
 .tline .tb.sel { top: 7px; height: 18px; opacity: 1; box-shadow: 0 0 0 1px var(--ink); }
+.tline .tcut { position: absolute; top: 4px; bottom: 4px; width: 1px; background: var(--ink-muted); opacity: 0.6; pointer-events: none; }
 .tline .tph { position: absolute; top: 2px; bottom: 2px; width: 1px; background: var(--ink); pointer-events: none; }
 
 /* Main screen: two columns, source on the left, settings on the right, the button across both. */
@@ -463,3 +464,15 @@ button.spk:hover { background: var(--paper-sunk); }
 .foot .link { font: inherit; text-decoration: none; }
 .foot .link.update { color: var(--ink); }
 .btn.danger, .chip.danger { border-color: var(--refused); color: var(--refused); }
+
+/* animated caption looks */
+.looks { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; padding: 0 12px 4px; }
+.look { display: flex; flex-direction: column; align-items: stretch; gap: 3px; padding: 6px; border: 1px solid var(--rule); border-radius: var(--radius-md); background: transparent; color: var(--ink); text-align: left; cursor: pointer; font: inherit; }
+.look:hover { border-color: var(--rule-strong); }
+.look[aria-checked="true"] { border-color: var(--product-cueline); box-shadow: 0 0 0 1px var(--product-cueline); }
+.look .lt { font-weight: 600; font-size: 11px; }
+.look .ls { color: var(--ink-muted); font-size: 10px; line-height: 1.35; }
+.lprev { display: flex; align-items: center; justify-content: center; height: 58px; border-radius: var(--radius-sm); overflow: hidden; background: linear-gradient(135deg, #3b4f63, #6a7d6c 60%, #8a6d55); }
+.lcap { font-family: Arial, "Arial Hebrew", sans-serif; font-weight: 700; white-space: nowrap; line-height: 1.4; }
+.copylook { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 6px 12px 16px; border-top: 1px solid var(--rule); }
+.copylook .hintline { margin: 0; }

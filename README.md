@@ -27,6 +27,10 @@ playback in Premiere Pro. Speakers are told apart by voice. Nothing is uploaded.
   names you give them, unsure ones flagged for you.
 - **Review:** waveform with draggable in and out, playback in Premiere Pro, follow the playhead, fillers, find and
   replace, undo. Batch for several sequences.
+- **Snap to cuts:** caption edges near a shot change move onto the cut, as broadcast and streaming specs ask.
+- **Animated captions:** one graphic per caption, the spoken word lit in its speaker's colour; nine looks, every part
+  editable in Essential Graphics, one look copied to all.
+- **Transcript for producers:** a Word document by speaker with timecodes, for paper edits.
 - **Premiere Pro:** 2022 or later, on macOS 12+ (Apple silicon and Intel) and Windows 10/11.
 - **Install:** signed and notarized `.pkg` for Mac, signed `Setup.exe` for Windows, from
   [Releases](https://github.com/ConformLabs/cueline/releases/latest). No administrator rights, no account. Free and open

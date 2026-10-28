@@ -21,3 +21,6 @@ node_modules/
 
 # the first engine build (source + logs), replaced by scripts/build-engine-mac.sh
 /engine/
+
+# After Effects auto-saves next to the template project
+templates/Auto-Save/

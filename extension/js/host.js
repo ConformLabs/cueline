@@ -79,6 +79,10 @@
       play: (sec) => call("cl_play", sec),
       stop: () => call("cl_stop"),
       addMarkers: (list) => call("cl_addMarkers", list),
+      cuts: () => call("cl_cuts"),
+      placeAnimated: (rtl, list, look) => call("cl_placeAnimated", path.join(extRoot, "mogrt", rtl ? "CuelineAnimatedRTL.mogrt" : "CuelineAnimated.mogrt"), list, look || []),
+      selectedFont: () => call("cl_selectedFont"),
+      copyLook: (schema, ratio) => call("cl_copyLook", schema, ratio || 1),
       tempFile(name, text) { const p = path.join(os.tmpdir(), name); fs.writeFileSync(p, text, "utf8"); return p; },
       // Delete a temporary file Cueline itself wrote: only its own names, only in a temp folder.
       removeTemp(p) {
@@ -93,7 +97,7 @@
       saveFile(defaultName, text) {
         const r = window.cep.fs.showSaveDialogEx("Export captions", os.homedir(), [defaultName.split(".").pop()], defaultName);
         if (r.err || !r.data) return null;
-        fs.writeFileSync(r.data, text, "utf8");
+        fs.writeFileSync(r.data, text, typeof text === "string" ? "utf8" : undefined);
         return r.data;
       },
       copy(text) { const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); },
@@ -263,11 +267,15 @@
       play: (sec) => { seq.playhead = sec; clearInterval(mockPlay); mockPlay = setInterval(() => (seq.playhead += 0.1), 100); return ok(); },
       stop: () => { clearInterval(mockPlay); return ok(); },
       addMarkers: (list) => ok({ added: list.length }),
+      cuts: () => ok({ cuts: [4, 9.5, 16, 22.4], fps: 25 }),
+      placeAnimated: async (rtl, list) => { await sleep(400); return { ok: true, placed: list.length, track: 3, missing: [] }; },
+      selectedFont: () => ok({ font: "Arial-BoldMT", size: 84 }),
+      copyLook: async () => { await sleep(200); return { ok: true, copied: 34, controls: 32 }; },
       tempFile: (name) => "/tmp/" + name,
       removeTemp: () => true,
       fileUrl: () => null,
       saveFile(defaultName, text) {
-        const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" })); a.download = defaultName; a.click(); return defaultName;
+        const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: typeof text === "string" ? "text/plain" : "application/octet-stream" })); a.download = defaultName; a.click(); return defaultName;
       },
       copy(text) { try { navigator.clipboard.writeText(text); } catch (e) {} },
       openFolder() {},

@@ -8,6 +8,7 @@
 **Using Cueline**
 - [The Cueline panel](The-Cueline-panel)
 - [Reviewing captions](Reviewing-captions)
+- [Animated captions](Animated-captions)
 - [Speakers](Speakers)
 - [Caption style and glossary](Caption-style-and-glossary)
 - [Models and languages](Models-and-languages)

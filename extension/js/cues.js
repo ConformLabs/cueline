@@ -588,6 +588,75 @@
     return timeCues(out, spec);
   }
 
+  /* ---------- shot changes ----------
+   * A caption that starts or ends a few frames off a cut flashes across it. Within `frames` (12, the
+   * Netflix window) of a cut, the in-point moves onto the cut and the out-point to the cut less the
+   * style's gap. `cuts` are seconds on the same clock as the captions. Captions never move so far
+   * that their first or last word is hidden, never overlap, and never drop under half a second. */
+  function snapToCuts(cues, cuts, spec, opts) {
+    if (!cuts || !cuts.length || !cues.length) return cues;
+    const fps = spec.fps || 25, o = { frames: 12, ...(opts || {}) };
+    const win = o.frames / fps + 1e-6, gap = (spec.gapFrames || 0) / fps;
+    const near = (t) => { let best = null; for (const k of cuts) if (Math.abs(k - t) <= win && (best == null || Math.abs(k - t) < Math.abs(best - t))) best = k; return best; };
+    const out = cues.map((c) => ({ ...c }));
+    for (let i = 0; i < out.length; i++) {
+      const c = out[i], prev = out[i - 1], next = cues[i + 1];
+      const ws = c.words && c.words.length ? c.words : [{ start: c.start, end: c.end }];
+      const k = near(c.start);
+      if (k != null && Math.abs(k - c.start) > 1e-6) {
+        const later = k > c.start;
+        if (later ? k <= ws[0].end - 0.1 && c.end - k >= 0.5 : !prev || k >= prev.end + gap) { c.start = snap(k, fps); c.cutIn = true; }
+      } else if (k != null) c.cutIn = true;
+      const e = near(c.end);
+      if (e != null) {
+        const target = snap(e - gap, fps);
+        const earlier = target < c.end;
+        const fits = earlier ? target >= ws[ws.length - 1].start + 0.15 && target - c.start >= 0.5 : !next || target <= Math.max(next.start, e) - gap;
+        if (fits && Math.abs(target - c.end) > 1e-6) { c.end = target; c.cutOut = true; } else if (Math.abs(target - c.end) <= 1e-6) c.cutOut = true;
+      }
+    }
+    for (let i = 0; i < out.length - 1; i++) if (out[i].end > out[i + 1].start - gap) out[i].end = Math.max(out[i].start + 1 / fps, snap(out[i + 1].start - gap, fps));
+    // Marked only where the caption really sits on a cut after all of that.
+    const on = (t) => cuts.some((k) => Math.abs(k - t) < 0.5 / fps);
+    for (const c of out) { c.cutIn = on(c.start); c.cutOut = on(c.end + gap); }
+    return out;
+  }
+  // How many captions sit on a cut (for the review summary).
+  function cutCount(cues) { return cues.reduce((n, c) => n + (c.cutIn || c.cutOut ? 1 : 0), 0); }
+
+  /* ---------- animated captions ----------
+   * When each word of a caption is spoken, as the template counts words (split on spaces, the
+   * dialogue dash dropped). Captions whose text was edited keep their word timings when the word
+   * count still matches; otherwise the caption's time is shared out by word length. */
+  function wordBeats(c) {
+    const text = c.text.replace(/^- /gm, "").replace(/\s+/g, " ").trim();
+    const words = text ? text.split(" ") : [];
+    const ws = (c.words || []).filter((w) => w.text && w.text.trim());
+    if (ws.length === words.length) return { text, beats: ws.map((w, i) => ({ t: Math.max(0, Math.min(w.start, c.end) - c.start), spk: w.spk == null ? null : w.spk, word: words[i] })) };
+    const total = words.reduce((n, w) => n + w.length + 1, 0) || 1;
+    let acc = 0;
+    return { text, beats: words.map((w) => { const t = ((c.end - c.start) * acc) / total; acc += w.length + 1; return { t, spk: ws.length ? ws[0].spk : null, word: w }; }) };
+  }
+
+  /* ---------- a transcript for producers ----------
+   * Paragraphs by speaker: a new one when the speaker changes, after a pause, or every `maxDur`
+   * seconds so the timecodes stay useful for a paper edit. Dialogue captions are split by voice. */
+  function transcriptTurns(cues, opts) {
+    const o = { pause: 4, maxDur: 40, ...(opts || {}) }, out = [];
+    const push = (start, end, spk, text) => {
+      const last = out[out.length - 1];
+      if (last && last.spk === spk && start - last.end < o.pause && end - last.start <= o.maxDur) { last.text += " " + text; last.end = end; }
+      else out.push({ start, end, spk, text });
+    };
+    for (const c of cues) {
+      const ws = c.words || [], runs = [];
+      for (const w of ws) { const r = runs[runs.length - 1]; if (r && r.spk === w.spk) r.ws.push(w); else runs.push({ spk: w.spk, ws: [w] }); }
+      if (runs.length > 1 && !c.edited) for (const r of runs) push(r.ws[0].start, r.ws[r.ws.length - 1].end, r.spk ?? null, joinText(r.ws));
+      else push(c.start, c.end, runs.length ? runs[0].spk ?? null : null, c.text.replace(/^- /gm, "").replace(/\n/g, " "));
+    }
+    return out;
+  }
+
   /* ---------- checks and fixes ---------- */
 
   function cps(c) { return c.text.replace(/\s+/g, "").length / Math.max(c.end - c.start, 0.001); }
@@ -872,7 +941,7 @@
   }
 
   const api = {
-    PRESETS, FILLERS, cleanWords, removeFillers, markFillers, fillerCount, dropFillers, keepFillers, applyGlossary, assignSpeakers, speakerOf, tidyTurns, speakerAtTurns, speakersFromTurns, setSpeaker, confirmSpeaker, splitBySpeaker, sentenceSpans, refineSpeakers, speakerCentres, cutCandidates, bestCuts, moveCuts, buildCues, timeCues, Stream, snapToSpeech, speechFrames, checkCue, checkAll,
+    PRESETS, FILLERS, cleanWords, removeFillers, markFillers, fillerCount, dropFillers, keepFillers, applyGlossary, assignSpeakers, speakerOf, tidyTurns, speakerAtTurns, speakersFromTurns, setSpeaker, confirmSpeaker, splitBySpeaker, sentenceSpans, refineSpeakers, speakerCentres, cutCandidates, bestCuts, moveCuts, buildCues, timeCues, Stream, snapToSpeech, speechFrames, snapToCuts, cutCount, wordBeats, transcriptTurns, checkCue, checkAll,
     fixExtend, fixSplit, fixMerge, fixAll, fixPreview, fixScore, setTime, splitAtWord, splitAtTime, editText, replaceAll, cps, isRtl, rtlLine,
     toSRT, toVTT, toTranscript, toPlain, timecode, srtTime, summary,
   };
